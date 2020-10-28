@@ -6,8 +6,11 @@ Grep Clojure code using clojure.spec regexes. Inspired by [grape](https://github
 
 The `grasp.api` namespace currently exposes:
 
-- `(grasp-file file spec)`: returns matched sexprs in file for spec. In case
-  `file` is a directory, it will be scanned recursively for source files ending with `.clj`, `.cljs` or `.cljc`.
+- `(grasp path-or-paths spec)`: returns matched sexprs in path or paths for
+  spec. Accept source file, directory, jar file or classpaths as string or a
+  collection of strings for passing multiple paths. In case of a directory, it
+  will be scanned recursively for source files ending with `.clj`, `.cljs` or
+  `.cljc`.
 - `(grasp-string string spec)`: returns matched sexprs in string for spec.
 - `(resolves-to? fqs)`: returns predicate that returns `true` if given symbol resolves to it.
 
@@ -22,8 +25,9 @@ Assuming you have the following requires:
 ``` clojure
 (require '[clojure.java.io :as io]
          '[clojure.pprint :as pprint]
+         '[clojure.string :as str]
          '[clojure.spec.alpha :as s]
-         '[grasp.api :as grasp])
+         '[grasp.api :as grasp :refer [grasp]])
 ```
 
 Find `reify` usage with more than one interface:
@@ -68,25 +72,47 @@ This outputs:
 Find all usages of `clojure.set/difference`:
 
 ``` clojure
+(defn table-row [sexpr]
+  (-> (meta sexpr)
+      (select-keys [:file :line :column])
+      (assoc :sexpr sexpr)))
+
 (->>
-   (grasp/grasp-file "/Users/borkdude/git/clojure/src"
-                     (grasp/resolves-to? 'clojure.set/difference))
-   (map (fn [sexpr] (assoc (meta sexpr) :sexpr sexpr)))
+   (grasp/grasp "/Users/borkdude/git/clojure/src"
+                (grasp/resolves-to? 'clojure.set/difference))
+   (map table-row)
    pprint/print-table)
 ```
 
 This outputs:
 
 ``` clojure
-| :line | :column | :end-line | :end-column |                                                   :file |         :sexpr |
-|-------+---------+-----------+-------------+---------------------------------------------------------+----------------|
-|    49 |       7 |        49 |          17 |     /Users/borkdude/git/clojure/src/clj/clojure/set.clj |     difference |
-|    62 |      14 |        62 |          24 |     /Users/borkdude/git/clojure/src/clj/clojure/set.clj |     difference |
-|   172 |       2 |       172 |          12 |     /Users/borkdude/git/clojure/src/clj/clojure/set.clj |     difference |
-|   112 |      19 |       112 |          33 |    /Users/borkdude/git/clojure/src/clj/clojure/data.clj | set/difference |
-|   113 |      19 |       113 |          33 |    /Users/borkdude/git/clojure/src/clj/clojure/data.clj | set/difference |
-|   107 |      37 |       107 |          51 | /Users/borkdude/git/clojure/src/clj/clojure/reflect.clj | set/difference |
+|                                                   :file | :line | :column |         :sexpr |
+|---------------------------------------------------------+-------+---------+----------------|
+|     /Users/borkdude/git/clojure/src/clj/clojure/set.clj |    49 |       7 |     difference |
+|     /Users/borkdude/git/clojure/src/clj/clojure/set.clj |    62 |      14 |     difference |
+|     /Users/borkdude/git/clojure/src/clj/clojure/set.clj |   172 |       2 |     difference |
+|    /Users/borkdude/git/clojure/src/clj/clojure/data.clj |   112 |      19 | set/difference |
+|    /Users/borkdude/git/clojure/src/clj/clojure/data.clj |   113 |      19 | set/difference |
+| /Users/borkdude/git/clojure/src/clj/clojure/reflect.clj |   107 |      37 | set/difference |
 ```
+
+Grasp the entire classpath for usage of `frequencies`:
+
+``` clojure
+(->> (grasp (System/getProperty "java.class.path")
+              #{'frequencies})
+     (take 2)
+     (map (comp #(select-keys % [:file :line]) meta)))
+```
+
+Output:
+
+``` clojure
+({:file "sci/impl/namespaces.cljc", :line 815}
+ {:file "sci/impl/namespaces.cljc", :line 815})
+```
+
 
 ## License
 

@@ -23,11 +23,16 @@
                                         :ns ns-obj}))
             refers))))
 
+(defn process-require-macros [ctx clause]
+  (let [rclause (rest clause)]
+    (run! #(stub-refers ctx %) rclause)
+    (cons :require rclause)))
+
 (defn process-ns
   [ctx ns]
   (keep (fn [x]
           (if (seq? x)
-            (cond (= :require-macros (first x)) x
+            (cond (= :require-macros (first x)) (process-require-macros ctx x)
                   (= :require (first x))
                   (do (run! #(stub-refers ctx %) (rest x))
                       x)
@@ -51,7 +56,8 @@
              :readers (fn [x]
                         ;; TODO: this doesn't seem to work
                         (prn :x x)
-                        identity)}
+                        identity)
+             :features #{:clj :cljs}}
             ))
 
 (def ^:private ^:dynamic *ctx* nil)
@@ -79,11 +85,13 @@
                    :file *file*}
                   cause)))
 
+(defn- source-name? [s]
+  (let [ext (last (str/split s #"\."))]
+    (contains? #{"clj" "cljc" "cljs"} ext)))
 
 (defn- source-file? [^java.io.File f]
   (and (.isFile f)
-       (let [ext (last (str/split (.getName f) #"\."))]
-         (contains? #{"clj" "cljc" "cljs"} ext))))
+       (source-name? (.getName f))))
 
 ;;;; Public API
 
@@ -118,13 +126,43 @@
                     matched (match-sexprs form spec)]
                 (recur (into matches matched))))))))))
 
-(defn grasp-file [file spec]
-  (let [file (io/file file)]
-    (if (.isDirectory file)
-      (mapcat #(grasp-file % spec)
-              (filter source-file? (file-seq file)))
-      (binding [*file* (.getPath file)]
-        (grasp-string (slurp file) spec)))))
+(def ^:private path-separator (System/getProperty "path.separator"))
+
+(defn- classpath? [path]
+  (str/includes? path path-separator))
+
+(defn sources-from-jar
+  [^java.io.File jar-file]
+  (with-open [jar (java.util.jar.JarFile. jar-file)]
+    (let [entries (enumeration-seq (.entries jar))
+          entries (filter (fn [^java.util.jar.JarFile$JarFileEntry x]
+                            (let [nm (.getName x)]
+                              (and (not (.isDirectory x)) (source-name? nm)))) entries)]
+      ;; Important that we close the `JarFile` so this has to be strict see GH
+      ;; issue #542. Maybe it makes sense to refactor loading source using
+      ;; transducers so we don't have to load the entire source of a jar file in
+      ;; memory at once?
+      (mapv (fn [^java.util.jar.JarFile$JarFileEntry entry]
+              {:file (.getName entry)
+               :source (slurp (.getInputStream jar entry))}) entries))))
+
+(defn grasp [path spec]
+  (cond (coll? path)
+        (mapcat #(grasp % spec) path)
+        (classpath? path)
+        (mapcat #(grasp % spec) (str/split path (re-pattern path-separator)))
+        :else
+        (let [file (io/file path)]
+          (cond (.isDirectory file)
+                (mapcat #(grasp % spec)
+                        (filter source-file? (file-seq file)))
+                (str/ends-with? path ".jar")
+                (mapcat #(binding [*file* (:file %)]
+                           (grasp-string (:source %) spec))
+                        (sources-from-jar file))
+                :else ;; assume file
+                (binding [*file* (.getPath file)]
+                  (grasp-string (slurp file) spec))))))
 
 (defn resolves-to? [fqs]
   (fn [sym]
@@ -135,6 +173,24 @@
 
 #_{:clj-kondo/ignore [:redefined-var]}
 (comment
+  (defn table-row [sexpr]
+    (-> (meta sexpr)
+        (select-keys [:line :column])
+        (assoc :sexpr sexpr)))
+
+  (defn sym-starting-with-a?
+    [s] (and (symbol? s)
+             (str/starts-with? (str s) "a")))
+
+  (require '[clojure.pprint :as pprint])
+
+  #_(->> (grasp (System/getProperty "java.class.path")
+              #{'frequencies})
+       (take 2)
+       (map (comp #(select-keys % [:file :line]) meta)))
+  
+
+  
   (def clojure-core (slurp (io/resource "clojure/core.clj")))
   (s/def ::clause (s/cat :sym symbol? :lists (s/+ list?)))
   ;; find usages of reify with at least two interfaces
@@ -155,17 +211,17 @@
                 (s/cat :fn (resolves-to? 'bar/f1)))
 
   (->>
-   (grasp-file "/Users/borkdude/Dropbox/dev/clojure/clj-kondo/src"
+   (grasp "/Users/borkdude/Dropbox/dev/clojure/clj-kondo/src"
                (s/cat :fn (resolves-to? 'clojure.set/difference) :rest (s/* any?)))
    (map (juxt identity meta)))
 
   (->>
-   (grasp-file "/Users/borkdude/Dropbox/dev/clojure/clj-kondo/src"
+   (grasp "/Users/borkdude/Dropbox/dev/clojure/clj-kondo/src"
                (resolves-to? 'clojure.core/juxt))
    (map (juxt identity meta)))
 
   (->>
-   (grasp-file "/Users/borkdude/git/clojure"
+   (grasp "/Users/borkdude/git/clojure"
                (resolves-to? 'clojure.set/difference))
    (mapv (juxt identity meta)))
   )
