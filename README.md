@@ -69,22 +69,24 @@ Find all usages of `clojure.set/difference`:
 
 ``` clojure
 (->>
-   (grasp/grasp-file "/Users/borkdude/git/clojure"
+   (grasp/grasp-file "/Users/borkdude/git/clojure/src"
                      (grasp/resolves-to? 'clojure.set/difference))
-   (map meta)
+   (map (fn [sexpr] (assoc (meta sexpr) :sexpr sexpr)))
    pprint/print-table)
 ```
 
 This outputs:
 
 ``` clojure
-| :line | :column | :end-line | :end-column |                                                                  :file |
-|-------+---------+-----------+-------------+------------------------------------------------------------------------|
-|    41 |      24 |        41 |          38 | /Users/borkdude/git/clojure/test/clojure/test_clojure/multimethods.clj |
-|   111 |       8 |       111 |          22 |  /Users/borkdude/git/clojure/test/clojure/test_clojure/clojure_set.clj |
-|   112 |       8 |       112 |          22 |  /Users/borkdude/git/clojure/test/clojure/test_clojure/clojure_set.clj |
+| :line | :column | :end-line | :end-column |                                                   :file |         :sexpr |
+|-------+---------+-----------+-------------+---------------------------------------------------------+----------------|
+|    49 |       7 |        49 |          17 |     /Users/borkdude/git/clojure/src/clj/clojure/set.clj |     difference |
+|    62 |      14 |        62 |          24 |     /Users/borkdude/git/clojure/src/clj/clojure/set.clj |     difference |
+|   172 |       2 |       172 |          12 |     /Users/borkdude/git/clojure/src/clj/clojure/set.clj |     difference |
+|   112 |      19 |       112 |          33 |    /Users/borkdude/git/clojure/src/clj/clojure/data.clj | set/difference |
+|   113 |      19 |       113 |          33 |    /Users/borkdude/git/clojure/src/clj/clojure/data.clj | set/difference |
+|   107 |      37 |       107 |          51 | /Users/borkdude/git/clojure/src/clj/clojure/reflect.clj | set/difference |
 ```
-(output abbreviated for readability)
 
 ## License
 
