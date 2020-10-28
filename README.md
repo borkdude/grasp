@@ -1,6 +1,6 @@
 # grasp
 
-Grep Clojure code using clojure.spec regexes.
+Grep Clojure code using clojure.spec regexes. Inspired by [grape](https://github.com/bfontaine/grape).
 
 ## API
 
