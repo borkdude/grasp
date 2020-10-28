@@ -31,6 +31,8 @@ Assuming you have the following requires:
          '[grasp.api :as grasp :refer [grasp]])
 ```
 
+### Find reify usages
+
 Find `reify` usage with more than one interface:
 
 ``` clojure
@@ -70,6 +72,8 @@ This outputs:
 ```
 (output abbreviated for readability)
 
+### Find usages based on resolved symbol
+
 Find all usages of `clojure.set/difference`:
 
 ``` clojure
@@ -100,6 +104,8 @@ This outputs:
 | /Users/borkdude/git/clojure/src/clj/clojure/reflect.clj |   107 |      37 | set/difference |
 ```
 
+### Grasp a classpath
+
 Grasp the entire classpath for usage of `frequencies`:
 
 ``` clojure
@@ -115,6 +121,42 @@ Output:
  {:file "sci/impl/namespaces.cljc", :line 815})
 ```
 
+### Find defn with largest arg vector
+
+``` clojure
+(s/def ::args+body (s/cat :arg-vec vector? :exprs (s/+ seq?)))
+(s/def ::fn-body (s/alt :single ::args+body :multi (s/+ (s/spec ::args+body))))
+(s/def ::defn (s/cat :defn #{'defn} :name symbol? :some-stuff (s/* any?) :fn-body ::fn-body))
+
+(defn arg-vecs [fn-body]
+  (case (first fn-body)
+    :single [(:arg-vec (second fn-body))]
+    :multi (mapv :arg-vec (second fn-body))))
+
+(s/def ::defn-with-large-arg-vec
+  (s/and ::defn (fn [m]
+                  (let [avs (arg-vecs (:fn-body m))]
+                    (some #(> (count %) 7) avs)))))
+
+(def matches (grasp (System/getProperty "java.class.path") ::defn-with-large-arg-vec))
+
+(defn table-row [sexpr]
+  (let [conformed (s/conform ::defn sexpr)
+        m (meta sexpr)
+        m (select-keys m [:file :line :column])]
+    (assoc m :name (:name conformed))))
+
+(pprint/print-table (map table-row matches))
+```
+
+This outputs:
+
+``` clojure
+|            :file | :line | :column |  :name |
+|------------------+-------+---------+--------|
+| clojure/core.clj |   353 |       1 | vector |
+| clojure/core.clj |  6188 |       1 | update |
+```
 
 ## License
 
