@@ -1,6 +1,6 @@
 # grasp
 
-Grep your Clojure code using clojure.spec regexes.
+Grep Clojure code using clojure.spec regexes.
 
 ## Status
 
