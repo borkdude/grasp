@@ -2,11 +2,7 @@
 
 Grep Clojure code using clojure.spec regexes.
 
-## Status
-
-Very alpha. API might change.
-
-## Usage
+## API
 
 The `grasp.api` namespace currently exposes:
 
@@ -14,6 +10,10 @@ The `grasp.api` namespace currently exposes:
   `file` is a directory, it will be scanned recursively for source files ending with `.clj`, `.cljs` or `.cljc`.
 - `(grasp-string file spec)`: returns matched sexprs in string for spec.
 - `(resolves-to? fqs)`: returns predicate that returns `true` if given symbol resolves to it.
+
+## Status
+
+Very alpha. API will almost certainly change.
 
 ## Example usage
 
