@@ -20,15 +20,15 @@ The `grasp.api` namespace currently exposes:
 Assuming you have the following requires:
 
 ``` clojure
-(require '[clojure.spec.alpha :as s]
-         '[grasp.api :as grasp]
-         '[clojure.java.io :as io]
-         '[clojure.pprint :as pprint])
+(require '[clojure.java.io :as io]
+         '[clojure.pprint :as pprint]
+         '[clojure.spec.alpha :as s]
+         '[grasp.api :as grasp])
 ```
 
 Find `reify` usage with more than one interface:
 
-```
+``` clojure
 (def clojure-core (slurp (io/resource "clojure/core.clj")))
 
 (s/def ::clause (s/cat :sym symbol? :lists (s/+ list?)))
