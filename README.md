@@ -12,7 +12,8 @@ The `grasp.api` namespace currently exposes:
   will be scanned recursively for source files ending with `.clj`, `.cljs` or
   `.cljc`.
 - `(grasp-string string spec)`: returns matched sexprs in string for spec.
-- `(resolves-to? fqs)`: returns predicate that returns `true` if given symbol resolves to it.
+- `resolve-symbol`: returns the resolved symbol for a symbol, taking into
+  account aliases and refers.
 
 ## Status
 
@@ -79,7 +80,9 @@ Find all usages of `clojure.set/difference`:
 
 (->>
    (grasp/grasp "/Users/borkdude/git/clojure/src"
-                (grasp/resolves-to? 'clojure.set/difference))
+                (fn [sym]
+                  (when (symbol? sym)
+                    (= 'clojure.set/difference (grasp/resolve-symbol sym)))))
    (map table-row)
    pprint/print-table)
 ```

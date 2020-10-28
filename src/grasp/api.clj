@@ -164,10 +164,8 @@
                 (binding [*file* (.getPath file)]
                   (grasp-string (slurp file) spec))))))
 
-(defn resolves-to? [fqs]
-  (fn [sym]
-    (when (symbol? sym)
-      (= fqs (p/fully-qualify *ctx* sym)))))
+(defn resolve-symbol [sym]
+  (p/fully-qualify *ctx* sym))
 
 ;;;; Scratch
 
