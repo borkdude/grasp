@@ -103,8 +103,7 @@ This outputs:
 Grasp the entire classpath for usage of `frequencies`:
 
 ``` clojure
-(->> (grasp (System/getProperty "java.class.path")
-              #{'frequencies})
+(->> (grasp (System/getProperty "java.class.path") #{'frequencies})
      (take 2)
      (map (comp #(select-keys % [:file :line]) meta)))
 ```
