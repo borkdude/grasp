@@ -8,7 +8,7 @@ The `grasp.api` namespace currently exposes:
 
 - `(grasp-file file spec)`: returns matched sexprs in file for spec. In case
   `file` is a directory, it will be scanned recursively for source files ending with `.clj`, `.cljs` or `.cljc`.
-- `(grasp-string file spec)`: returns matched sexprs in string for spec.
+- `(grasp-string string spec)`: returns matched sexprs in string for spec.
 - `(resolves-to? fqs)`: returns predicate that returns `true` if given symbol resolves to it.
 
 ## Status
