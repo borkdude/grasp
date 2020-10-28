@@ -1,2 +1,2 @@
-{:deps {borkdude/sci {:local/root "../babashka/sci"}
-        #_#_borkdude/sci {:mvn/version "0.1.1-alpha.9"}}}
+{:deps {#_#_borkdude/sci {:local/root "../babashka/sci"}
+        borkdude/sci {:mvn/version "0.1.1-alpha.9"}}}
