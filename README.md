@@ -7,9 +7,9 @@ Grep Clojure code using clojure.spec regexes. Inspired by [grape](https://github
 The `grasp.api` namespace currently exposes:
 
 - `(grasp path-or-paths spec)`: returns matched sexprs in path or paths for
-  spec. Accept source file, directory, jar file or classpaths as string or a
-  collection of strings for passing multiple paths. In case of a directory, it
-  will be scanned recursively for source files ending with `.clj`, `.cljs` or
+  spec. Accept source file, directory, jar file or classpath as string as well
+  as a collection of strings for passing multiple paths. In case of a directory,
+  it will be scanned recursively for source files ending with `.clj`, `.cljs` or
   `.cljc`.
 - `(grasp-string string spec)`: returns matched sexprs in string for spec.
 - `resolve-symbol`: returns the resolved symbol for a symbol, taking into
