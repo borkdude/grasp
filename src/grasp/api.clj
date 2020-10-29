@@ -91,7 +91,9 @@
 
 (defn- source-file? [^java.io.File f]
   (and (.isFile f)
-       (source-name? (.getName f))))
+       (let [name (.getName f)]
+         (or (source-name? name)
+             (str/ends-with? name ".jar")))))
 
 ;;;; Public API
 
