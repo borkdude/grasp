@@ -6,49 +6,71 @@
             [sci.core :as sci]
             [sci.impl.parser :as p]))
 
-(defn stub-refers [ctx clause]
-  (when (seqable? clause)
-    (let [clause (if (= 'quote (first clause)) (second clause) clause)
-          ns (first clause)
-          ns-obj (sci/create-ns ns nil)
-          env (:env ctx)
-          clause* (drop-while #(not= :refer %) clause)
-          refers (when (= :refer (first clause*))
-                   (let [refers (second clause*)]
-                     (if (seqable? refers)
-                       refers
-                       nil #_(prn clause))))]
+(defn decompose-clause [clause]
+  (if (symbol? clause)
+    {:ns clause}
+    (when (seqable? clause)
+      (let [clause (if (= 'quote (first clause))
+                     (second clause)
+                     clause)
+            [ns & tail] clause]
+        (loop [parsed {:ns ns}
+               tail (seq tail)]
+          (if tail
+            (let [ftail (first tail)]
+              (case ftail
+                :as (recur (assoc parsed :as (second tail))
+                           (nnext tail))
+                (:refer :refer-macros)
+                (let [refer (second tail)]
+                  (if (seqable? refer)
+                    (recur (assoc parsed :refer (second tail))
+                           (nnext tail))
+                    (recur parsed (nnext tail))))
+                ;; default
+                (recur parsed
+                       (nnext tail))))
+            parsed))))))
+
+(defn recompose-clause [{:keys [:ns :as :refer]}]
+  [ns :as as :refer refer])
+
+(defn stub-refers [ctx {:keys [:ns :refer]}]
+  (when (seq refer)
+    (let [ns-obj (sci/create-ns ns nil)
+          env (:env ctx)]
       (run! #(swap! env assoc-in [:namespaces ns %]
                     (sci/new-var % nil {:name %
                                         :ns ns-obj}))
-            refers))))
-
-(defn process-require-macros [ctx clause]
-  (let [rclause (rest clause)]
-    (run! #(stub-refers ctx %) rclause)
-    (cons :require rclause)))
+            refer))))
 
 (defn process-ns
   [ctx ns]
   (keep (fn [x]
           (if (seq? x)
-            (cond (= :require-macros (first x)) (process-require-macros ctx x)
-                  (= :require (first x))
-                  (do (run! #(stub-refers ctx %) (rest x))
-                      x)
-                  ;; ignore all the rest
-                  )
+            (let [fx (first x)]
+              (when (or (identical? :require fx)
+                        (identical? :require-macros fx))
+                (let [decomposed (keep decompose-clause (rest x))
+                      recomposed (map recompose-clause decomposed)]
+                  (run! #(stub-refers ctx %) decomposed)
+                  (list* :require recomposed))))
             x))
         ns))
 
-(defn process-require
-  [ctx req-form]
-  (let [quoted (filter (fn [x]
-                         (and (seq? x)
-                              (= 'quote (first x))))
-                       (rest req-form))]
-    (run! #(stub-refers ctx %) quoted)
-    (cons (first req-form) quoted)))
+(defn keep-quoted [clauses]
+  (keep (fn [clause]
+          (when (and (seq? clause) (= 'quote (first clause)))
+            (second clause)))
+        clauses))
+
+(defn process-require [ctx req]
+  (let [quoted (keep-quoted (rest req))
+        decomposed (map decompose-clause quoted)]
+    (run! #(stub-refers ctx %) decomposed)
+    (list* 'require (map (fn [clause]
+                           (list 'quote (recompose-clause clause)))
+                         decomposed))))
 
 (defn- init []
   (sci/init {;; never load namespaces
