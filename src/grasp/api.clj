@@ -100,13 +100,15 @@
        (filter #(s/valid? spec %))
        (map with-file)))
 
-(defn- eval-error [_ctx reader form cause]
-  (throw (ex-info (str form)
-                  {:line (sci/get-line-number reader)
-                   :column (sci/get-column-number reader)
-                   :file *file*
-                   :form form}
-                  cause)))
+(defn- log-error [_ctx reader form cause]
+  (binding [*out* *err*]
+    (prn
+     {:type :error
+      :line (sci/get-line-number reader)
+      :column (sci/get-column-number reader)
+      :file *file*
+      :form form
+      :cause (when cause (.getMessage ^Throwable cause))})))
 
 (defn- source-name? [s]
   (let [ext (last (str/split s #"\."))]
@@ -138,13 +140,13 @@
                             (let [ns-form (process-ns ctx nexpr)]
                               (try (sci/eval-form ctx ns-form)
                                    (catch Exception e
-                                     (eval-error ctx reader ns-form e)))
+                                     (log-error ctx reader ns-form e)))
                               nexpr)
                             (= 'require (first nexpr))
                             (let [req-form (process-require ctx nexpr)]
                               (try (sci/eval-form ctx req-form)
                                    (catch Exception e
-                                     (eval-error ctx reader nexpr e)))
+                                     (log-error ctx reader nexpr e)))
                               nexpr)
                             :else nexpr)
                       nexpr)
