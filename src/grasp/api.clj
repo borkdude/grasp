@@ -104,7 +104,8 @@
   (throw (ex-info (str form)
                   {:line (sci/get-line-number reader)
                    :column (sci/get-column-number reader)
-                   :file *file*}
+                   :file *file*
+                   :form form}
                   cause)))
 
 (defn- source-name? [s]
