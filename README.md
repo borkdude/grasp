@@ -143,10 +143,12 @@ occurrences of `:my.cljs.app.subs/my-data` in this example:
 We can find them like this:
 
 ``` clojure
+(s/def ::subscription (fn [x] (= :my.cljs.app.subs/my-data (unwrap x))))
+
 (def matches
-  (grasp "code.clj"
-    #(identical? :my.cljs.app.subs/my-data (unwrap %))
-    {:wrap true}))
+  (grasp "/tmp/code.clj" ::subscription {:wrap true}))
+
+(run! prn (map meta matches))
 ```
 
 Note that you explicitly have to provide `:wrap true` to make grasp wrap
