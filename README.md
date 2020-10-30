@@ -130,7 +130,7 @@ the `unwrap` function to get hold of the form, while you can access the location
 of that form using the container's metadata. Say we would like to find all
 occurrences of `:my.cljs.app.subs/my-data` in this example:
 
-`code.clj`:
+`/tmp/code.clj`:
 ``` clojure
 (ns my.cljs.app.views
   (:require [my.cljs.app.subs :as subs]
@@ -157,8 +157,8 @@ keywords.
 The output:
 
 ``` clojure
-{:line 5, :column 13, :end-line 5, :end-column 27, :file "code.clj"}
-{:line 6, :column 13, :end-line 6, :end-column 38, :file "code.clj"}
+{:line 5, :column 13, :end-line 5, :end-column 27, :file "/tmp/code.clj"}
+{:line 6, :column 13, :end-line 6, :end-column 38, :file "/tmp/code.clj"}
 ```
 
 ### More examples
