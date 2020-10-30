@@ -123,12 +123,12 @@ Output:
 
 ### Finding keywords
 
-When searching for keywords you will run into the problem that they can't carry
-metadata. To solve this problem, grasp lets you wrap forms that do not support
-metadata in a container that can. Grasp exposes the `unwrap` function to get
-hold of the form, while you can access the location of that form using the
-container's metadata. Say we would like to find all occurrences of
-`:my.cljs.app.subs/my-data` in this example:
+When searching for keywords you will run into the problem that they do not have
+location information because they can't carry metadata. To solve this problem,
+grasp lets you wrap non-metadata supporting forms in a container. Grasp exposes
+the `unwrap` function to get hold of the form, while you can access the location
+of that form using the container's metadata. Say we would like to find all
+occurrences of `:my.cljs.app.subs/my-data` in this example:
 
 `code.clj`:
 ``` clojure
