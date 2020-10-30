@@ -1,2 +1,8 @@
 {:deps {#_#_borkdude/sci {:local/root "../babashka/sci"}
-        borkdude/sci {:mvn/version "0.1.1-alpha.9"}}}
+        borkdude/sci {:git/url "https://github.com/borkdude/sci"
+                      :sha "cb96d7fb2a37a7c21c78fc145948d6867c30936a"}}
+ :aliases {:test {:extra-paths ["test"]
+                  :extra-deps {cognitect-labs/test-runner
+                               {:git/url "https://github.com/cognitect-labs/test-runner"
+                                :sha "cb96e80f6f3d3b307c59cbeb49bb0dcb3a2a780b"}}
+                  :main-opts ["-m" "cognitect.test-runner"]}}}

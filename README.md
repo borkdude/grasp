@@ -121,42 +121,47 @@ Output:
  {:file "sci/impl/namespaces.cljc", :line 815})
 ```
 
-### Find defn with largest arg vector
+### Finding keywords
 
+When searching for keywords you will run into the problem that they can't carry
+metadata. To solve this problem, grasp lets you wrap forms that do not support
+metadata in a container that can. Grasp exposes the `unwrap` function to get
+hold of the form, while you can access the location of that form using the
+container's metadata. Say we would like to find all occurrences of
+`:my.cljs.app.subs/my-data` in this example:
+
+`code.clj`:
 ``` clojure
-(s/def ::args+body (s/cat :arg-vec vector? :exprs (s/+ seq?)))
-(s/def ::fn-body (s/alt :single ::args+body :multi (s/+ (s/spec ::args+body))))
-(s/def ::defn (s/cat :defn #{'defn} :name symbol? :some-stuff (s/* any?) :fn-body ::fn-body))
+(ns my.cljs.app.views
+  (:require [my.cljs.app.subs :as subs]
+            [re-frame.core :refer [subscribe]]))
 
-(defn arg-vecs [fn-body]
-  (case (first fn-body)
-    :single [(:arg-vec (second fn-body))]
-    :multi (mapv :arg-vec (second fn-body))))
-
-(s/def ::defn-with-large-arg-vec
-  (s/and ::defn (fn [m]
-                  (let [avs (arg-vecs (:fn-body m))]
-                    (some #(> (count %) 7) avs)))))
-
-(def matches (grasp (System/getProperty "java.class.path") ::defn-with-large-arg-vec))
-
-(defn table-row [sexpr]
-  (let [conformed (s/conform ::defn sexpr)
-        m (meta sexpr)
-        m (select-keys m [:file :line :column])]
-    (assoc m :name (:name conformed))))
-
-(pprint/print-table (map table-row matches))
+(subscribe [::subs/my-data])
+(subscribe [:my.cljs.app.subs/my-data])
 ```
 
-This outputs:
+We can find them like this:
 
 ``` clojure
-|            :file | :line | :column |  :name |
-|------------------+-------+---------+--------|
-| clojure/core.clj |   353 |       1 | vector |
-| clojure/core.clj |  6188 |       1 | update |
+(def matches
+  (grasp "code.clj"
+    #(identical? :my.cljs.app.subs/my-data (unwrap %))
+    {:wrap true}))
 ```
+
+Note that you explicitly have to provide `:wrap true` to make grasp wrap
+keywords.
+
+The output:
+
+``` clojure
+{:line 5, :column 13, :end-line 5, :end-column 27, :file "code.clj"}
+{:line 6, :column 13, :end-line 6, :end-column 38, :file "code.clj"}
+```
+
+### More examples
+
+More examples in [examples](examples).
 
 ## License
 
