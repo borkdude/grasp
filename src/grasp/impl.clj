@@ -85,33 +85,31 @@
             ))
 
 (def ^:dynamic *ctx* nil)
-(def ^:dynamic *file* nil)
 
-(defn with-file [sexpr]
-  (let [f *file*]
-    (if (and f (instance? clojure.lang.IObj sexpr))
-      (vary-meta sexpr assoc :file f)
-      sexpr)))
+(defn with-file [file sexpr]
+  (if (and file (instance? clojure.lang.IObj sexpr))
+    (vary-meta sexpr assoc :file file)
+    sexpr))
 
 (defrecord Wrapper [obj])
 
 (defn match-sexprs
-  [source-tree spec valid-fn]
+  [source-tree spec valid-fn file]
   (->> source-tree
        (tree-seq #(and (seqable? %)
                        (not (string? %))
                        (not (instance? Wrapper %)))
                  seq)
        (filter #(valid-fn spec %))
-       (map with-file)))
+       (map #(with-file file %))))
 
-(defn log-error [_ctx reader form cause]
+(defn log-error [_ctx file reader form cause]
   (binding [*out* *err*]
     (prn
      {:type :error
       :line (sci/get-line-number reader)
       :column (sci/get-column-number reader)
-      :file *file*
+      :file file
       :form form
       :cause (when cause (.getMessage ^Throwable cause))})))
 
@@ -143,7 +141,8 @@
     (binding [*ctx* ctx]
       (sci/with-bindings {sci/ns @sci/ns}
         (loop [matches []]
-          (let [nexpr (try (sci/parse-next ctx reader
+          (let [file (:file opts)
+                nexpr (try (sci/parse-next ctx reader
                                            (if (:wrap opts)
                                              {:postprocess
                                               (fn [{:keys [:obj :loc]}]
@@ -152,7 +151,6 @@
                                                   (with-meta (->Wrapper obj) loc)))}
                                              nil))
                            (catch Exception _
-                             ;; (prn *file* (sci/get-line-number reader) (sci/get-column-number reader))
                              nil))]
             (if (= ::sci/eof nexpr)
               matches
@@ -163,18 +161,18 @@
                                   ns-form (process-ns ctx ns-form)]
                               (try (sci/eval-form ctx ns-form)
                                    (catch Exception e
-                                     (log-error ctx reader ns-form e)))
+                                     (log-error ctx file reader ns-form e)))
                               nexpr)
                             (= 'require (first nexpr))
                             (let [req-form (unwrap-all nexpr)
                                   req-form (process-require ctx req-form)]
                               (try (sci/eval-form ctx req-form)
                                    (catch Exception e
-                                     (log-error ctx reader nexpr e)))
+                                     (log-error file ctx reader nexpr e)))
                               nexpr)
                             :else nexpr)
                       nexpr)
-                    matched (match-sexprs form spec (:valid-fn opts))]
+                    matched (match-sexprs form spec (:valid-fn opts) file)]
                 (recur (into matches matched))))))))))
 
 (defn sources-from-jar
@@ -208,12 +206,10 @@
                 (mapcat #(grasp % spec opts)
                         (filter source-file? (file-seq file)))
                 (str/ends-with? path ".jar")
-                (mapcat #(binding [*file* (:file %)]
-                           (grasp-string (:source %) spec opts))
+                (mapcat #(grasp-string (:source %) spec (assoc opts :file (:file %)))
                         (sources-from-jar file))
                 :else ;; assume file
-                (binding [*file* (.getPath file)]
-                  (grasp-string (slurp file) spec opts))))))
+                (grasp-string (slurp file) spec (assoc opts :file (.getPath file)))))))
 
 (defn resolve-symbol [sym]
   (p/fully-qualify *ctx* sym))

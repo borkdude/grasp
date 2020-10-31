@@ -10,15 +10,19 @@
 (def sns (sci/create-ns 'clojure.spec.alpha nil))
 
 (def spec-ns
-  {'cat (sci/copy-var s/cat sns)
+  {'and (sci/copy-var s/and sns)
+   'cat (sci/copy-var s/cat sns)
    '* (sci/copy-var s/* sns)
+   '? (sci/copy-var s/? sns)
    })
 
 (def ins (sci/create-ns 'grasp.impl.spec nil))
 
 (def impl-ns
-  {'cat-impl (sci/copy-var s/cat-impl sns)
-   'rep-impl (sci/copy-var s/rep-impl ins)})
+  {'and-spec-impl (sci/copy-var s/and-spec-impl ins)
+   'cat-impl (sci/copy-var s/cat-impl ins)
+   'rep-impl (sci/copy-var s/rep-impl ins)
+   'maybe-impl (sci/copy-var s/maybe-impl ins)})
 
 (defn eval-spec [spec-string]
   (sci/eval-string spec-string {:aliases {'s 'clojure.spec.alpha}
@@ -31,7 +35,7 @@
     ;; (run! prn matches #_(map meta matches))
     (doseq [m matches]
       (let [{:keys [:file :line :column]} (meta m)]
-        (when (and file line)
+        (when (and file line (.exists (io/file file)))
           (with-open [rdr (io/reader file)]
             (let [s (nth (line-seq rdr) (dec line))]
               (println (str file ":" line ":" column) (str/triml s)))))))))
