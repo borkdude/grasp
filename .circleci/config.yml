@@ -7,7 +7,7 @@ jobs:
   jvm:
     docker:
       # specify the version you desire here
-      - image: circleci/clojure:lein-2.8.1
+      - image: circleci/clojure:lein-2.9.3-buster
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
@@ -34,7 +34,7 @@ jobs:
           key: v1-dependencies-{{ checksum "deps.edn" }}
   linux:
     docker:
-      - image: circleci/clojure:lein-2.8.1
+      - image: circleci/clojure:lein-2.9.3-buster
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
@@ -56,7 +56,7 @@ jobs:
           name: Install native dev tools
           command: |
             sudo apt-get update
-            sudo apt-get -y install gcc zlib1g-dev
+            sudo apt-get -y install gcc g++ zlib1g-dev
       - run:
           name: Download GraalVM
           command: |
@@ -147,7 +147,7 @@ jobs:
           destination: release
   deploy:
     docker:
-      - image: circleci/clojure:lein-2.8.1
+      - image: circleci/clojure:lein-2.9.3-buster
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"

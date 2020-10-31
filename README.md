@@ -167,7 +167,12 @@ More examples in [examples](examples).
 
 ## Binary
 
-Run `script/compile` to compile the `grasp` binary, which can be invoked like this:
+A CLI binary can be obtained from the builds. Linux and macOS users should go to
+[CircleCI](https://app.circleci.com/pipelines/github/borkdude/grasp?branch=master)
+and Windows users should go to
+[Appveyor](https://ci.appveyor.com/project/borkdude/grasp).
+
+It can be invoked like this:
 
 ``` shell
 $ ./grasp ~/git/spec.alpha/src -w -e "(fn [k] (= :clojure.spec.alpha/invalid (unwrap k)))" | wc -l
@@ -201,6 +206,11 @@ The evaluated code from `-e` or `-f` may return a spec (or spec keyword) or call
 
 This example will also set wrapping values automatically.
 
+
+### Build
+
+Run `script/compile` to compile the `grasp` binary using
+[GraalVM](https://www.graalvm.org/downloads)
 ## License
 
 Copyright © 2020 Michiel Borkent
