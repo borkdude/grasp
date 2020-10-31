@@ -197,8 +197,6 @@ The evaluated code from `-e` or `-f` may return a spec (or spec keyword) or call
 (require '[clojure.spec.alpha :as s])
 (require '[grasp.api :refer [unwrap set-opts!]])
 
-(def opts {:wrap true})
-
 (s/def ::spec (fn [x] (= :clojure.spec.alpha/invalid (unwrap x))))
 
 (set-opts! {:spec ::spec :opts {:wrap true}})
