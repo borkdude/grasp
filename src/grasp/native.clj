@@ -15,6 +15,7 @@
    'cat (sci/copy-var s/cat sns)
    '* (sci/copy-var s/* sns)
    '? (sci/copy-var s/? sns)
+   '+ (sci/copy-var s/+ sns)
    })
 
 (def ins (sci/create-ns 'grasp.impl.spec nil))
@@ -23,6 +24,7 @@
   {'and-spec-impl (sci/copy-var s/and-spec-impl ins)
    'cat-impl (sci/copy-var s/cat-impl ins)
    'rep-impl (sci/copy-var s/rep-impl ins)
+   'rep+impl (sci/copy-var s/rep+impl ins)
    'maybe-impl (sci/copy-var s/maybe-impl ins)})
 
 (def gns (sci/create-ns 'grap.api nil))
@@ -40,17 +42,34 @@
 (defn -main [& args]
   (let [parsed (parse-opts args cli-options)
         args (:arguments parsed)
+        arg-count (count args)
         options (:options parsed)
         [path-opt spec-opt] [(:path options) (:spec options)]
-        path (or path-opt (when spec-opt (first args)) (second args) ".")
-        spec (or spec-opt (when path-opt (first args) (second args)))
+        spec (or spec-opt (case arg-count
+                            1 (first args) ;; when no spec-opt, this must be the
+                                           ;; spec, since path is optional
+                            2 (second args)
+                            (throw (ex-info "No spec provided." parsed))))
+        path (or path-opt (case arg-count
+                            2 (first args)
+                            1 (when-not spec-opt ;; spec was provided via arg
+                                (first args))
+                            "."))
         wrap (:wrap options)
         matches (impl/grasp path (eval-spec spec) {:valid-fn s/valid?
-                                                   :wrap wrap})]
-    (doseq [m matches]
-      (let [{:keys [:file :line :column]} (meta m)]
-        (when (and file line (.exists (io/file file)))
-          (with-open [rdr (io/reader file)]
-            (let [s (nth (line-seq rdr) (dec line))]
-              (println (str file ":" line ":" column) (str/triml s)))))))))
+                                                   :wrap wrap})
+        matches (map (fn [m] (assoc (meta m) :sexpr m)) matches)
+        batches (partition-by :file matches)]
+    (doseq [batch batches
+            :let [file (:file (first batch))
+                  lines (when (.exists (io/file file))
+                          (-> (slurp file)
+                              str/split-lines))]
+            m batch]
+      (let [{:keys [:line :end-line :column]} m]
+        (when lines
+          (let [snippet (subvec lines (dec line) end-line)
+                snippet (str/join "\n" snippet)]
+            (println (str file ":" line ":" column "\n" snippet))
+            (println)))))))
 
