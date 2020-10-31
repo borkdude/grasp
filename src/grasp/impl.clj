@@ -2,7 +2,6 @@
   {:no-doc true}
   (:refer-clojure :exclude [*file*])
   (:require [clojure.java.io :as io]
-            [clojure.spec.alpha :as s]
             [clojure.string :as str]
             [clojure.walk :refer [postwalk]]
             [grasp.impl :as impl]
@@ -97,13 +96,13 @@
 (defrecord Wrapper [obj])
 
 (defn match-sexprs
-  [source-tree spec]
+  [source-tree spec valid-fn]
   (->> source-tree
        (tree-seq #(and (seqable? %)
                        (not (string? %))
                        (not (instance? Wrapper %)))
                  seq)
-       (filter #(s/valid? spec %))
+       (filter #(valid-fn spec %))
        (map with-file)))
 
 (defn log-error [_ctx reader form cause]
@@ -175,7 +174,7 @@
                               nexpr)
                             :else nexpr)
                       nexpr)
-                    matched (match-sexprs form spec)]
+                    matched (match-sexprs form spec (:valid-fn opts))]
                 (recur (into matches matched))))))))))
 
 (defn sources-from-jar
@@ -221,27 +220,27 @@
 
 ;;;; QUERY
 
-(declare expand-query)
+;; (declare expand-query)
 
-(defn expand-cat [[_$cat & args]]
-  (let [args (map expand-query args)]
-    (s/cat-impl (take (count args) (repeat ':_)) args args)))
+;; (defn expand-cat [[_$cat & args]]
+;;   (let [args (map expand-query args)]
+;;     (s/cat-impl (take (count args) (repeat ':_)) args args)))
 
-(defn expand-query [query]
-  (cond (seq? query)
-    (let [f (first query)]
-      (case f
-        $cat (expand-cat query)
-        query))
-    (symbol? query) #{query}
-    :else query))
+;; (defn expand-query [query]
+;;   (cond (seq? query)
+;;     (let [f (first query)]
+;;       (case f
+;;         $cat (expand-cat query)
+;;         query))
+;;     (symbol? query) #{query}
+;;     :else query))
 
-(defn query* [query]
-  (expand-query query))
+;; (defn query* [query]
+;;   (expand-query query))
 
-(defn query [query-string]
-  (let [parsed (sci/parse-next (init) (sci/reader query-string))]
-    (query* parsed)))
+;; (defn query [query-string]
+;;   (let [parsed (sci/parse-next (init) (sci/reader query-string))]
+;;     (query* parsed)))
 
 
 

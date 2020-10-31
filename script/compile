@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+if [ -z "$GRAALVM_HOME" ]; then
+    echo "Please set $GRAALVM_HOME"
+    exit 1
+fi
+
+rm -rf classes && mkdir -p classes
+clojure -M:native \
+        -e '(println :direct-linking (System/getProperty "clojure.compiler.direct-linking"))' \
+        -e "(compile 'grasp.native)"
+
+"$GRAALVM_HOME/bin/gu" install native-image
+
+"$GRAALVM_HOME/bin/native-image" \
+    -cp "classes:$(clojure -Spath -A:native)" \
+    -H:Name=grasp \
+    -H:+ReportExceptionStackTraces \
+    --initialize-at-build-time  \
+    --report-unsupported-elements-at-runtime \
+    --verbose \
+    --no-fallback \
+    --no-server \
+    "-J-Xmx3g" \
+    grasp.native

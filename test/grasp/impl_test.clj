@@ -3,5 +3,5 @@
             [clojure.test :as t :refer [deftest is]]
             [grasp.impl :as impl]))
 
-(deftest query-test
+#_(deftest query-test
   (is (s/valid? (impl/query "($cat foo bar)") '(foo bar))))
