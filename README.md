@@ -19,6 +19,22 @@ The `grasp.api` namespace currently exposes:
 
 Very alpha. API will almost certainly change.
 
+## Binary
+
+Run `script/compile` to compile the `grasp` binary, which can be invoked like this:
+
+``` shell
+$ ./grasp <path> <spec>
+```
+
+The binary supports the following options:
+
+``` clojure
+-p, --path: path
+-e, --spec: spec
+-w, --wrap: wrap non-metadata supporting objects
+```
+
 ## Example usage
 
 Assuming you have the following requires:
