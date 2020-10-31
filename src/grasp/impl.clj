@@ -8,6 +8,8 @@
             [sci.core :as sci]
             [sci.impl.parser :as p]))
 
+(set! *warn-on-reflection* true)
+
 (defn decompose-clause [clause]
   (if (symbol? clause)
     {:ns clause}
@@ -86,30 +88,30 @@
 
 (def ^:dynamic *ctx* nil)
 
-(defn with-file [file sexpr]
-  (if (and file (instance? clojure.lang.IObj sexpr))
-    (vary-meta sexpr assoc :file file)
+(defn with-url [url sexpr]
+  (if (and url (instance? clojure.lang.IObj sexpr))
+    (vary-meta sexpr assoc :url (str url))
     sexpr))
 
 (defrecord Wrapper [obj])
 
 (defn match-sexprs
-  [source-tree spec valid-fn file]
+  [source-tree spec valid-fn url]
   (->> source-tree
        (tree-seq #(and (seqable? %)
                        (not (string? %))
                        (not (instance? Wrapper %)))
                  seq)
        (filter #(valid-fn spec %))
-       (map #(with-file file %))))
+       (map #(with-url url %))))
 
-(defn log-error [_ctx file reader form cause]
+(defn log-error [_ctx url reader form cause]
   (binding [*out* *err*]
     (prn
      {:type :error
       :line (sci/get-line-number reader)
       :column (sci/get-column-number reader)
-      :file file
+      :url url
       :form form
       :cause (when cause (.getMessage ^Throwable cause))})))
 
@@ -141,7 +143,7 @@
     (binding [*ctx* ctx]
       (sci/with-bindings {sci/ns @sci/ns}
         (loop [matches []]
-          (let [file (:file opts)
+          (let [url (:url opts)
                 nexpr (try (sci/parse-next ctx reader
                                            (if (:wrap opts)
                                              {:postprocess
@@ -161,18 +163,18 @@
                                   ns-form (process-ns ctx ns-form)]
                               (try (sci/eval-form ctx ns-form)
                                    (catch Exception e
-                                     (log-error ctx file reader ns-form e)))
+                                     (log-error ctx url reader ns-form e)))
                               nexpr)
                             (= 'require (first nexpr))
                             (let [req-form (unwrap-all nexpr)
                                   req-form (process-require ctx req-form)]
                               (try (sci/eval-form ctx req-form)
                                    (catch Exception e
-                                     (log-error file ctx reader nexpr e)))
+                                     (log-error url ctx reader nexpr e)))
                               nexpr)
                             :else nexpr)
                       nexpr)
-                    matched (match-sexprs form spec (:valid-fn opts) file)]
+                    matched (match-sexprs form spec (:valid-fn opts) url)]
                 (recur (into matches matched))))))))))
 
 (defn sources-from-jar
@@ -187,7 +189,7 @@
       ;; transducers so we don't have to load the entire source of a jar file in
       ;; memory at once?
       (mapv (fn [^java.util.jar.JarFile$JarFileEntry entry]
-              {:file (.getName entry)
+              {:url (java.net.URL. (str "jar:file:" (.getPath jar-file) "!/" (.getName entry)))
                :source (slurp (.getInputStream jar entry))}) entries))))
 
 (def path-separator (System/getProperty "path.separator"))
@@ -206,10 +208,10 @@
                 (mapcat #(grasp % spec opts)
                         (filter source-file? (file-seq file)))
                 (str/ends-with? path ".jar")
-                (mapcat #(grasp-string (:source %) spec (assoc opts :file (:file %)))
+                (mapcat #(grasp-string (:source %) spec (assoc opts :url (:url %)))
                         (sources-from-jar file))
                 :else ;; assume file
-                (grasp-string (slurp file) spec (assoc opts :file (.getPath file)))))))
+                (grasp-string (slurp file) spec (assoc opts :url (.toURL file)))))))
 
 (defn resolve-symbol [sym]
   (p/fully-qualify *ctx* sym))

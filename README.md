@@ -98,7 +98,7 @@ Find all usages of `clojure.set/difference`:
 ``` clojure
 (defn table-row [sexpr]
   (-> (meta sexpr)
-      (select-keys [:file :line :column])
+      (select-keys [:url :line :column])
       (assoc :sexpr sexpr)))
 
 (->>
@@ -113,14 +113,14 @@ Find all usages of `clojure.set/difference`:
 This outputs:
 
 ``` clojure
-|                                                   :file | :line | :column |         :sexpr |
-|---------------------------------------------------------+-------+---------+----------------|
-|     /Users/borkdude/git/clojure/src/clj/clojure/set.clj |    49 |       7 |     difference |
-|     /Users/borkdude/git/clojure/src/clj/clojure/set.clj |    62 |      14 |     difference |
-|     /Users/borkdude/git/clojure/src/clj/clojure/set.clj |   172 |       2 |     difference |
-|    /Users/borkdude/git/clojure/src/clj/clojure/data.clj |   112 |      19 | set/difference |
-|    /Users/borkdude/git/clojure/src/clj/clojure/data.clj |   113 |      19 | set/difference |
-| /Users/borkdude/git/clojure/src/clj/clojure/reflect.clj |   107 |      37 | set/difference |
+|                                                         :url | :line | :column |         :sexpr |
+|--------------------------------------------------------------+-------+---------+----------------|
+|     file:/Users/borkdude/git/clojure/src/clj/clojure/set.clj |    49 |       7 |     difference |
+|     file:/Users/borkdude/git/clojure/src/clj/clojure/set.clj |    62 |      14 |     difference |
+|     file:/Users/borkdude/git/clojure/src/clj/clojure/set.clj |   172 |       2 |     difference |
+|    file:/Users/borkdude/git/clojure/src/clj/clojure/data.clj |   112 |      19 | set/difference |
+|    file:/Users/borkdude/git/clojure/src/clj/clojure/data.clj |   113 |      19 | set/difference |
+| file:/Users/borkdude/git/clojure/src/clj/clojure/reflect.clj |   107 |      37 | set/difference |
 ```
 
 ### Grasp a classpath
@@ -130,14 +130,14 @@ Grasp the entire classpath for usage of `frequencies`:
 ``` clojure
 (->> (grasp (System/getProperty "java.class.path") #{'frequencies})
      (take 2)
-     (map (comp #(select-keys % [:file :line]) meta)))
+     (map (comp #(select-keys % [:url :line]) meta)))
 ```
 
 Output:
 
 ``` clojure
-({:file "sci/impl/namespaces.cljc", :line 815}
- {:file "sci/impl/namespaces.cljc", :line 815})
+({:url "file:/Users/borkdude/.gitlibs/libs/borkdude/sci/cb96d7fb2a37a7c21c78fc145948d6867c30936a/src/sci/impl/namespaces.cljc", :line 815}
+ {:url "file:/Users/borkdude/.gitlibs/libs/borkdude/sci/cb96d7fb2a37a7c21c78fc145948d6867c30936a/src/sci/impl/namespaces.cljc", :line 815})
 ```
 
 ### Finding keywords
@@ -176,8 +176,8 @@ keywords.
 The output:
 
 ``` clojure
-{:line 5, :column 13, :end-line 5, :end-column 27, :file "/tmp/code.clj"}
-{:line 6, :column 13, :end-line 6, :end-column 38, :file "/tmp/code.clj"}
+{:line 5, :column 13, :end-line 5, :end-column 27, :url "file:/tmp/code.clj"}
+{:line 6, :column 13, :end-line 6, :end-column 38, :url "file:/tmp/code.clj"}
 ```
 
 ### More examples

@@ -1,12 +1,13 @@
 (ns grasp.native
   (:gen-class)
   (:require
-   [clojure.java.io :as io]
    [clojure.string :as str]
    [clojure.tools.cli :refer [parse-opts]]
    [grasp.impl :as impl]
    [grasp.impl.spec :as s]
    [sci.core :as sci]))
+
+(set! *warn-on-reflection* true)
 
 (def sns (sci/create-ns 'clojure.spec.alpha nil))
 
@@ -59,17 +60,17 @@
         matches (impl/grasp path (eval-spec spec) {:valid-fn s/valid?
                                                    :wrap wrap})
         matches (map (fn [m] (assoc (meta m) :sexpr m)) matches)
-        batches (partition-by :file matches)]
+        batches (partition-by :uri matches)]
     (doseq [batch batches
-            :let [file (:file (first batch))
-                  lines (when (.exists (io/file file))
-                          (-> (slurp file)
+            :let [uri (:url (first batch))
+                  lines (when uri
+                          (-> (slurp uri)
                               str/split-lines))]
             m batch]
       (let [{:keys [:line :end-line :column]} m]
         (when lines
           (let [snippet (subvec lines (dec line) end-line)
                 snippet (str/join "\n" snippet)]
-            (println (str file ":" line ":" column "\n" snippet))
+            (println (str uri ":" line ":" column "\n" snippet))
             (println)))))))
 
