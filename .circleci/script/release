@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+rm -rf /tmp/release
+mkdir -p /tmp/release
+cp grasp /tmp/release
+VERSION=$(cat resources/GRASP_VERSION)
+
+cd /tmp/release
+
+## release binary as zip archive
+
+zip "grasp-$VERSION-$APP_PLATFORM-amd64.zip" grasp
+
+## cleanup
+
+rm grasp
