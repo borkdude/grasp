@@ -188,7 +188,7 @@ The binary supports the following options:
 -w, --wrap: wrap non-metadata supporting objects
 ```
 
-The path and spec may also be provided without flags, like `grap <path> <spec>`.
+The path and spec may also be provided without flags, like `grasp <path> <spec>`.
 
 The evaluated code from `-e` or `-f` may return a spec (or spec keyword) or call
 `set-opts!` with a map that contains `:spec` and/or `:opts`. E.g.:
