@@ -24,7 +24,8 @@ Very alpha. API will almost certainly change.
 Run `script/compile` to compile the `grasp` binary, which can be invoked like this:
 
 ``` shell
-$ ./grasp <path> <spec>
+$ ./grasp ~/git/spec.alpha/src -w -e "(fn [k] (= :clojure.spec.alpha/invalid (unwrap k)))" | wc -l
+      67
 ```
 
 The binary supports the following options:
@@ -34,6 +35,8 @@ The binary supports the following options:
 -e, --spec: spec
 -w, --wrap: wrap non-metadata supporting objects
 ```
+
+The path and spec may also be provided without flags.
 
 ## Example usage
 
