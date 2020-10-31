@@ -3,6 +3,7 @@
   (:require
    [clojure.java.io :as io]
    [clojure.string :as str]
+   [clojure.tools.cli :refer [parse-opts]]
    [grasp.impl :as impl]
    [grasp.impl.spec :as s]
    [sci.core :as sci]))
@@ -24,15 +25,28 @@
    'rep-impl (sci/copy-var s/rep-impl ins)
    'maybe-impl (sci/copy-var s/maybe-impl ins)})
 
-(defn eval-spec [spec-string]
-  (sci/eval-string spec-string {:aliases {'s 'clojure.spec.alpha}
-                                :namespaces {'clojure.spec.alpha spec-ns
-                                             'grasp.impl.spec impl-ns}})
-  )
+(def gns (sci/create-ns 'grap.api nil))
 
-(defn -main [& [path spec opts]]
-  (let [matches (impl/grasp path (eval-spec spec) {:valid-fn s/valid?})]
-    ;; (run! prn matches #_(map meta matches))
+(defn eval-spec [spec-string]
+   (sci/eval-string spec-string {:aliases {'s 'clojure.spec.alpha}
+                                 :bindings {'unwrap (sci/copy-var impl/unwrap gns)}
+                                 :namespaces {'clojure.spec.alpha spec-ns
+                                             'grasp.impl.spec impl-ns}}))
+
+(def cli-options [["-p" "--path PATH" "The search path"]
+                  ["-e" "--spec SPEC" "The spec"]
+                  ["-w" "--wrap"]])
+
+(defn -main [& args]
+  (let [parsed (parse-opts args cli-options)
+        args (:arguments parsed)
+        options (:options parsed)
+        [path-opt spec-opt] [(:path options) (:spec options)]
+        path (or path-opt (when spec-opt (first args)) (second args) ".")
+        spec (or spec-opt (when path-opt (first args) (second args)))
+        wrap (:wrap options)
+        matches (impl/grasp path (eval-spec spec) {:valid-fn s/valid?
+                                                   :wrap wrap})]
     (doseq [m matches]
       (let [{:keys [:file :line :column]} (meta m)]
         (when (and file line (.exists (io/file file)))
