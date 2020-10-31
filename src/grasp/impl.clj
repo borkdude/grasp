@@ -218,3 +218,30 @@
 
 (defn resolve-symbol [sym]
   (p/fully-qualify *ctx* sym))
+
+;;;; QUERY
+
+(declare expand-query)
+
+(defn expand-cat [[_$cat & args]]
+  (let [args (map expand-query args)]
+    (s/cat-impl (take (count args) (repeat ':_)) args args)))
+
+(defn expand-query [query]
+  (cond (seq? query)
+    (let [f (first query)]
+      (case f
+        $cat (expand-cat query)
+        query))
+    (symbol? query) #{query}
+    :else query))
+
+(defn query* [query]
+  (expand-query query))
+
+(defn query [query-string]
+  (let [parsed (sci/parse-next (init) (sci/reader query-string))]
+    (query* parsed)))
+
+
+
