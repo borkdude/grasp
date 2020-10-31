@@ -19,26 +19,6 @@ The `grasp.api` namespace currently exposes:
 
 Very alpha. API will almost certainly change.
 
-## Binary
-
-Run `script/compile` to compile the `grasp` binary, which can be invoked like this:
-
-``` shell
-$ ./grasp ~/git/spec.alpha/src -w -e "(fn [k] (= :clojure.spec.alpha/invalid (unwrap k)))" | wc -l
-      67
-```
-
-The binary supports the following options:
-
-``` clojure
--p, --path: path
--e, --expr: spec from expr
--f, --file: spec from file
--w, --wrap: wrap non-metadata supporting objects
-```
-
-The path and spec may also be provided without flags.
-
 ## Example usage
 
 Assuming you have the following requires:
@@ -184,6 +164,42 @@ The output:
 ### More examples
 
 More examples in [examples](examples).
+
+## Binary
+
+Run `script/compile` to compile the `grasp` binary, which can be invoked like this:
+
+``` shell
+$ ./grasp ~/git/spec.alpha/src -w -e "(fn [k] (= :clojure.spec.alpha/invalid (unwrap k)))" | wc -l
+      67
+```
+
+The binary supports the following options:
+
+``` clojure
+-p, --path: path
+-e, --expr: spec from expr
+-f, --file: spec from file
+-w, --wrap: wrap non-metadata supporting objects
+```
+
+The path and spec may also be provided without flags, like `grap <path> <spec>`.
+
+The evaluated code from `-e` or `-f` may return a spec (or spec keyword) or call
+`set-opts!` with a map that contains `:spec` and/or `:opts`. E.g.:
+
+``` clojure
+(require '[clojure.spec.alpha :as s])
+(require '[grasp.api :refer [unwrap set-opts!]])
+
+(def opts {:wrap true})
+
+(s/def ::spec (fn [x] (= :clojure.spec.alpha/invalid (unwrap x))))
+
+(set-opts! {:spec ::spec :opts {:wrap true}})
+```
+
+This example will also set wrapping values automatically.
 
 ## License
 

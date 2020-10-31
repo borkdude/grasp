@@ -32,11 +32,21 @@
 
 (def gns (sci/create-ns 'grap.api nil))
 
+(defonce opts (atom nil))
+
+(defn set-opts! [m]
+  (reset! opts m))
+
+(def grasp-api-ns
+  {'unwrap (sci/copy-var impl/unwrap gns)
+   'set-opts! (sci/copy-var set-opts! gns)})
+
 (defn eval-spec [spec-string]
    (sci/eval-string spec-string {:aliases {'s 'clojure.spec.alpha}
-                                 :bindings {'unwrap (sci/copy-var impl/unwrap gns)}
+                                 :bindings grasp-api-ns
                                  :namespaces {'clojure.spec.alpha spec-ns
-                                             'grasp.impl.spec impl-ns}}))
+                                              'grasp.api grasp-api-ns
+                                              'grasp.impl.spec impl-ns}}))
 
 (def cli-options [["-p" "--path PATH" "Path with sources"]
                   ["-e" "--expr SPEC" "Eval spec from expr"]
@@ -61,8 +71,9 @@
                             1 (when spec-opt ;; spec was not provided via arg
                                 (first args))
                             "."))
-        wrap (:wrap options)
         spec (eval-spec spec)
+        spec (or (:spec @opts) spec)
+        wrap (or (:wrap options) (some-> @opts :opts :wrap))
         matches (impl/grasp path spec {:valid-fn s/valid?
                                                    :wrap wrap})
         matches (map (fn [m] (assoc (meta m) :sexpr m)) matches)
