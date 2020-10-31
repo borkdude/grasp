@@ -32,7 +32,8 @@ The binary supports the following options:
 
 ``` clojure
 -p, --path: path
--e, --spec: spec
+-e, --expr: spec from expr
+-f, --file: spec from file
 -w, --wrap: wrap non-metadata supporting objects
 ```
 

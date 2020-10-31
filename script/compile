@@ -19,6 +19,7 @@ clojure -M:native \
     -H:Name=grasp \
     -H:+ReportExceptionStackTraces \
     --initialize-at-build-time  \
+    -H:EnableURLProtocols=jar \
     --report-unsupported-elements-at-runtime \
     --verbose \
     --no-fallback \

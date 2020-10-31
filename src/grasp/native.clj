@@ -14,6 +14,7 @@
 (def spec-ns
   {'and (sci/copy-var s/and sns)
    'cat (sci/copy-var s/cat sns)
+   'def (sci/copy-var s/def sns)
    '* (sci/copy-var s/* sns)
    '? (sci/copy-var s/? sns)
    '+ (sci/copy-var s/+ sns)
@@ -24,6 +25,7 @@
 (def impl-ns
   {'and-spec-impl (sci/copy-var s/and-spec-impl ins)
    'cat-impl (sci/copy-var s/cat-impl ins)
+   'def-impl (sci/copy-var s/def-impl ins)
    'rep-impl (sci/copy-var s/rep-impl ins)
    'rep+impl (sci/copy-var s/rep+impl ins)
    'maybe-impl (sci/copy-var s/maybe-impl ins)})
@@ -36,8 +38,9 @@
                                  :namespaces {'clojure.spec.alpha spec-ns
                                              'grasp.impl.spec impl-ns}}))
 
-(def cli-options [["-p" "--path PATH" "The search path"]
-                  ["-e" "--spec SPEC" "The spec"]
+(def cli-options [["-p" "--path PATH" "Path with sources"]
+                  ["-e" "--expr SPEC" "Eval spec from expr"]
+                  ["-f" "--file SPEC" "Read spec from file"]
                   ["-w" "--wrap"]])
 
 (defn -main [& args]
@@ -45,7 +48,9 @@
         args (:arguments parsed)
         arg-count (count args)
         options (:options parsed)
-        [path-opt spec-opt] [(:path options) (:spec options)]
+        [path-opt spec-opt] [(:path options) (or (:expr options)
+                                                 (when-let [f (:file options)]
+                                                   (slurp f)))]
         spec (or spec-opt (case arg-count
                             1 (first args) ;; when no spec-opt, this must be the
                                            ;; spec, since path is optional
@@ -53,24 +58,25 @@
                             (throw (ex-info "No spec provided." parsed))))
         path (or path-opt (case arg-count
                             2 (first args)
-                            1 (when-not spec-opt ;; spec was provided via arg
+                            1 (when spec-opt ;; spec was not provided via arg
                                 (first args))
                             "."))
         wrap (:wrap options)
-        matches (impl/grasp path (eval-spec spec) {:valid-fn s/valid?
+        spec (eval-spec spec)
+        matches (impl/grasp path spec {:valid-fn s/valid?
                                                    :wrap wrap})
         matches (map (fn [m] (assoc (meta m) :sexpr m)) matches)
-        batches (partition-by :uri matches)]
+        batches (partition-by :url matches)]
     (doseq [batch batches
-            :let [uri (:url (first batch))
-                  lines (when uri
-                          (-> (slurp uri)
+            :let [url (:url (first batch))
+                  lines (when url
+                          (-> (slurp url)
                               str/split-lines))]
             m batch]
       (let [{:keys [:line :end-line :column]} m]
         (when lines
           (let [snippet (subvec lines (dec line) end-line)
                 snippet (str/join "\n" snippet)]
-            (println (str uri ":" line ":" column "\n" snippet))
+            (println (str url ":" line ":" column "\n" snippet))
             (println)))))))
 
