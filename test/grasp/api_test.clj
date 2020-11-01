@@ -2,7 +2,7 @@
   (:require [clojure.java.io :as io]
             [clojure.spec.alpha :as s]
             [clojure.test :as t :refer [deftest is]]
-            [grasp.api :as grasp :refer [grasp grasp-string unwrap]]))
+            [grasp.api :as g :refer [grasp grasp-string unwrap]]))
 
 (def clojure-core (slurp (io/resource "clojure/core.clj")))
 
@@ -13,7 +13,7 @@
          :clauses (s/cat :clause ::clause :clauses (s/+ ::clause))))
 
 (deftest reify-test
-  (let [matches (grasp/grasp-string clojure-core ::reify)
+  (let [matches (g/grasp-string clojure-core ::reify)
         locs (map meta matches)
         lines (map :line locs)]
     (is (= 2 (count lines)))
@@ -32,7 +32,7 @@
              (->> (grasp-string prog
                                 (fn [sym]
                                   (when (symbol? sym)
-                                    (= 'clojure.set/difference (grasp/resolve-symbol sym)))))
+                                    (= 'clojure.set/difference (g/resolve-symbol sym)))))
                   (map meta))))))
 
 (deftest classpath-test
@@ -62,4 +62,10 @@
                                          :_ (fn [x]
                                               (nil? (unwrap x))))
                                   {:wrap true})))))
-
+(deftest macro-test
+  (is  (= '({:line 1, :column 1, :end-line 1, :end-column 12})
+          (map meta (grasp-string "(merge nil)"
+                                  (g/cat 'merge
+                                         (fn [x]
+                                           (nil? (unwrap x))))
+                                  {:wrap true})))))

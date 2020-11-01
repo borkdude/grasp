@@ -13,22 +13,32 @@
 
 (def spec-ns
   {'and (sci/copy-var s/and sns)
+   'or (sci/copy-var s/or sns)
    'cat (sci/copy-var s/cat sns)
    'def (sci/copy-var s/def sns)
    '* (sci/copy-var s/* sns)
    '? (sci/copy-var s/? sns)
    '+ (sci/copy-var s/+ sns)
-   })
+   '& (sci/copy-var s/& sns)
+   'tuple (sci/copy-var s/tuple sns)
+   'nilable (sci/copy-var s/nilable sns)
+   'keys (sci/copy-var s/keys sns)
+   'keys* (sci/copy-var s/keys* sns)})
 
 (def ins (sci/create-ns 'grasp.impl.spec nil))
 
 (def impl-ns
   {'and-spec-impl (sci/copy-var s/and-spec-impl ins)
+   'or-spec-impl (sci/copy-var s/or-spec-impl ins)
    'cat-impl (sci/copy-var s/cat-impl ins)
    'def-impl (sci/copy-var s/def-impl ins)
    'rep-impl (sci/copy-var s/rep-impl ins)
    'rep+impl (sci/copy-var s/rep+impl ins)
-   'maybe-impl (sci/copy-var s/maybe-impl ins)})
+   'amp-impl (sci/copy-var s/amp-impl ins)
+   'maybe-impl (sci/copy-var s/maybe-impl ins)
+   'tuple-impl (sci/copy-var s/tuple-impl ins)
+   'nilable-impl (sci/copy-var s/nilable-impl ins)
+   'map-spec-impl (sci/copy-var s/map-spec-impl ins)})
 
 (def gns (sci/create-ns 'grap.api nil))
 
@@ -39,14 +49,20 @@
 
 (def grasp-api-ns
   {'unwrap (sci/copy-var impl/unwrap gns)
-   'set-opts! (sci/copy-var set-opts! gns)})
+   'set-opts! (sci/copy-var set-opts! gns)
+   'or  (sci/copy-var impl/or gns)
+   'cat (sci/copy-var impl/cat gns)
+   'seq (sci/copy-var impl/seq gns)
+   'vec (sci/copy-var impl/vec gns)})
 
 (defn eval-spec [spec-string]
-   (sci/eval-string spec-string {:aliases {'s 'clojure.spec.alpha}
-                                 :bindings grasp-api-ns
-                                 :namespaces {'clojure.spec.alpha spec-ns
-                                              'grasp.api grasp-api-ns
-                                              'grasp.impl.spec impl-ns}}))
+  (sci/eval-string spec-string {:aliases {'g 'grasp.api
+                                          's 'clojure.spec.alpha}
+                                :bindings grasp-api-ns
+                                :namespaces {'clojure.spec.alpha spec-ns
+                                             'grasp.impl grasp-api-ns
+                                             'grasp.api grasp-api-ns
+                                             'grasp.impl.spec impl-ns}}))
 
 (def cli-options [["-p" "--path PATH" "Path with sources"]
                   ["-e" "--expr SPEC" "Eval spec from expr"]
@@ -74,20 +90,30 @@
         spec (eval-spec spec)
         spec (or (:spec @opts) spec)
         wrap (or (:wrap options) (some-> @opts :opts :wrap))
-        matches (impl/grasp path spec {:valid-fn s/valid?
-                                                   :wrap wrap})
+        from-stdin? (= "-" path)
+        stdin (when from-stdin? (slurp *in*))
+        matches (if from-stdin?
+                  (impl/grasp-string stdin spec {:valid-fn s/valid?
+                                                 :wrap wrap})
+                  (impl/grasp path spec {:valid-fn s/valid?
+                                         :wrap wrap}))
         matches (map (fn [m] (assoc (meta m) :sexpr m)) matches)
         batches (partition-by :url matches)]
     (doseq [batch batches
             :let [url (:url (first batch))
-                  lines (when url
-                          (-> (slurp url)
-                              str/split-lines))]
+                  lines (if from-stdin?
+                          (-> stdin str/split-lines)
+                          (some-> url slurp
+                                  str/split-lines))]
             m batch]
-      (let [{:keys [:line :end-line :column]} m]
+      (let [{:keys [:line :end-line :column :_sexpr]} m]
         (when lines
           (let [snippet (subvec lines (dec line) end-line)
+                ;;conformed (s/conform spec sexpr)
                 snippet (str/join "\n" snippet)]
-            (println (str url ":" line ":" column "\n" snippet))
+            (println (str (if from-stdin? "stdin"
+                              url) ":"
+                          line ":" column "\n" snippet))
+            ;; (prn conformed)
             (println)))))))
 

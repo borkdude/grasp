@@ -1,4 +1,5 @@
 (ns grasp.api
+  (:refer-clojure :exclude [cat or seq vec])
   (:require [clojure.spec.alpha :as s]
             [grasp.impl :as impl]))
 
@@ -17,3 +18,8 @@
 
 (defn unwrap [wrapped]
   (impl/unwrap wrapped))
+
+(def ^:macro cat @#'impl/cat)
+(def ^:macro or  @#'impl/or)
+(def ^:macro seq @#'impl/seq)
+(def ^:macro vec @#'impl/vec)

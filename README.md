@@ -28,7 +28,7 @@ Assuming you have the following requires:
          '[clojure.pprint :as pprint]
          '[clojure.string :as str]
          '[clojure.spec.alpha :as s]
-         '[grasp.api :as grasp :refer [grasp]])
+         '[grasp.api :as g])
 ```
 
 ### Find reify usages
@@ -44,7 +44,7 @@ Find `reify` usage with more than one interface:
   (s/cat :reify #{'reify}
          :clauses (s/cat :clause ::clause :clauses (s/+ ::clause))))
 
-(def matches (grasp/grasp-string clojure-core ::reify))
+(def matches (g/grasp-string clojure-core ::reify))
 
 (doseq [m matches]
   (prn (meta m))
@@ -83,10 +83,10 @@ Find all usages of `clojure.set/difference`:
       (assoc :sexpr sexpr)))
 
 (->>
-   (grasp/grasp "/Users/borkdude/git/clojure/src"
+   (g/grasp "/Users/borkdude/git/clojure/src"
                 (fn [sym]
                   (when (symbol? sym)
-                    (= 'clojure.set/difference (grasp/resolve-symbol sym)))))
+                    (= 'clojure.set/difference (g/resolve-symbol sym)))))
    (map table-row)
    pprint/print-table)
 ```
@@ -165,6 +165,17 @@ The output:
 
 More examples in [examples](examples).
 
+## Convenience macros
+
+Grasp exposes the `cat`, `seq` and `vec`, and `or` convenience macros.
+
+All of these macros support passing in a single quoted value for matching a
+literal thing `'foo` for matching that symbol instead of
+`#{'foo}`. Additionally, they let you write specs without names for each parsed
+item: `(g/cat 'foo int?)` instead of `(s/cat :s #{'foo} :i int?)`. The `seq` and
+`vec` macro is like the `cat` macro but additionally check for `seq?` and
+`vector?` respectively.
+
 ## Binary
 
 A CLI binary can be obtained from the builds. Linux and macOS users should go to
@@ -188,7 +199,8 @@ The binary supports the following options:
 -w, --wrap: wrap non-metadata supporting objects
 ```
 
-The path and spec may also be provided without flags, like `grasp <path> <spec>`.
+The path and spec may also be provided without flags, like `grasp <path>
+<spec>`. Use `-` for grasping from stdin.
 
 The evaluated code from `-e` or `-f` may return a spec (or spec keyword) or call
 `set-opts!` with a map that contains `:spec` and/or `:opts`. E.g.:
@@ -203,7 +215,6 @@ The evaluated code from `-e` or `-f` may return a spec (or spec keyword) or call
 ```
 
 This example will also set wrapping values automatically.
-
 
 ### Build
 

@@ -1,6 +1,6 @@
 (ns grasp.impl
   {:no-doc true}
-  (:refer-clojure :exclude [*file*])
+  (:refer-clojure :exclude [cat or seq vec])
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.walk :refer [postwalk]]
@@ -19,7 +19,7 @@
                      clause)
             [ns & tail] clause]
         (loop [parsed {:ns ns}
-               tail (seq tail)]
+               tail (clojure.core/seq tail)]
           (if tail
             (let [ftail (first tail)]
               (case ftail
@@ -40,7 +40,7 @@
   [ns :as as :refer refer])
 
 (defn stub-refers [ctx {:keys [:ns :refer]}]
-  (when (seq refer)
+  (when (clojure.core/seq refer)
     (let [ns-obj (sci/create-ns ns nil)
           env (:env ctx)]
       (run! #(swap! env assoc-in [:namespaces ns %]
@@ -53,7 +53,7 @@
   (keep (fn [x]
           (if (seq? x)
             (let [fx (first x)]
-              (when (or (identical? :require fx)
+              (when (clojure.core/or (identical? :require fx)
                         (identical? :require-macros fx))
                 (let [decomposed (keep decompose-clause (rest x))
                       recomposed (map recompose-clause decomposed)]
@@ -101,7 +101,7 @@
        (tree-seq #(and (seqable? %)
                        (not (string? %))
                        (not (instance? Wrapper %)))
-                 seq)
+                 clojure.core/seq)
        (filter #(valid-fn spec %))
        (map #(with-url url %))))
 
@@ -121,9 +121,9 @@
 
 (defn source-file? [^java.io.File f]
   (and (.isFile f)
-       (let [name (.getName f)]
-         (or (source-name? name)
-             (str/ends-with? name ".jar")))))
+       (let [nm (.getName f)]
+         (clojure.core/or (source-name? nm)
+                          (str/ends-with? nm ".jar")))))
 
 (defn iobj? [x]
   (instance? clojure.lang.IObj x))
@@ -140,7 +140,8 @@
   [s spec opts]
   (let [ctx (init)
         reader (sci/reader s)]
-    (binding [*ctx* ctx]
+    (binding [*ctx* ctx] ;; grasp-string returns a strict seqable (vector) of
+                         ;; matches to ensure *ctx* is still bound
       (sci/with-bindings {sci/ns @sci/ns}
         (loop [matches []]
           (let [url (:url opts)
@@ -218,27 +219,27 @@
 
 ;;;; QUERY
 
-;; (declare expand-query)
+(declare expand-query)
 
-;; (defn expand-cat [[_$cat & args]]
-;;   (let [args (map expand-query args)]
-;;     (s/cat-impl (take (count args) (repeat ':_)) args args)))
+(defn quoted? [x]
+  (and (seq? x)
+       (= 'quote (first x))))
 
-;; (defn expand-query [query]
-;;   (cond (seq? query)
-;;     (let [f (first query)]
-;;       (case f
-;;         $cat (expand-cat query)
-;;         query))
-;;     (symbol? query) #{query}
-;;     :else query))
+(defn expand-query [x]
+  (if (quoted? x)
+    #{x}
+    x))
 
-;; (defn query* [query]
-;;   (expand-query query))
+(def kws (map keyword (repeatedly gensym)))
 
-;; (defn query [query-string]
-;;   (let [parsed (sci/parse-next (init) (sci/reader query-string))]
-;;     (query* parsed)))
+(defmacro or [& preds]
+  `(clojure.spec.alpha/or ~@(interleave kws
+                                        (map expand-query preds))))
+(defmacro cat [& preds]
+  `(clojure.spec.alpha/cat ~@(interleave kws
+                                         (map expand-query preds))))
+(defmacro seq [& preds]
+  `(clojure.spec.alpha/and seq? (cat ~@preds)))
 
-
-
+(defmacro vec [& preds]
+  `(clojure.spec.alpha/and vector? (cat ~@preds)))

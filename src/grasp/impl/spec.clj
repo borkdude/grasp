@@ -1813,9 +1813,9 @@
   user=> (s/conform (s/cat :i1 integer? :m (s/keys* :req-un [::a ::c]) :i2 integer?) [42 :a 1 :c 2 :d 4 99])
   {:i1 42, :m {:a 1, :c 2, :d 4}, :i2 99}"
   [& kspecs]
-  `(let [mspec# (keys ~@kspecs)]
-     (with-gen (clojure.spec.alpha/& (* (cat ::k keyword? ::v any?)) ::kvs->map mspec#)
-       (fn [] (gen/fmap (fn [m#] (apply concat m#)) (gen mspec#))))))
+  `(let [mspec# (clojure.spec.alpha/keys ~@kspecs)]
+     ;; NOTE: got rid of with-gen
+     (clojure.spec.alpha/& (clojure.spec.alpha/* (clojure.spec.alpha/cat ::k keyword? ::v any?)) ::kvs->map mspec#)))
 
 (defn ^:skip-wiki nonconforming
   "takes a spec and returns a spec that has the same properties except
