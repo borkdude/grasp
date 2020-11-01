@@ -39,12 +39,16 @@
 
 (def grasp-api-ns
   {'unwrap (sci/copy-var impl/unwrap gns)
-   'set-opts! (sci/copy-var set-opts! gns)})
+   'set-opts! (sci/copy-var set-opts! gns)
+   'gcat (sci/copy-var impl/gcat gns)
+   'gseq (sci/copy-var impl/gseq gns)
+   'gvec (sci/copy-var impl/gvec gns)})
 
 (defn eval-spec [spec-string]
    (sci/eval-string spec-string {:aliases {'s 'clojure.spec.alpha}
                                  :bindings grasp-api-ns
                                  :namespaces {'clojure.spec.alpha spec-ns
+                                              'grasp.impl grasp-api-ns
                                               'grasp.api grasp-api-ns
                                               'grasp.impl.spec impl-ns}}))
 

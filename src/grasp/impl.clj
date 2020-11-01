@@ -218,23 +218,25 @@
 
 ;;;; QUERY
 
-;; (declare expand-query)
+(declare expand-query)
 
-;; (defn expand-cat [[_$cat & args]]
-;;   (let [args (map expand-query args)]
-;;     (s/cat-impl (take (count args) (repeat ':_)) args args)))
+(defn quoted? [x]
+  (and (seq? x)
+       (= 'quote (first x))))
 
-;; (defn expand-query [query]
-;;   (cond (seq? query)
-;;     (let [f (first query)]
-;;       (case f
-;;         $cat (expand-cat query)
-;;         query))
-;;     (symbol? query) #{query}
-;;     :else query))
+(defn expand-query [x]
+  (if (quoted? x)
+    #{x}
+    x))
 
-;; (defn query* [query]
-;;   (expand-query query))
+(defmacro gcat [& preds]
+  `(clojure.spec.alpha/cat ~@(interleave (repeat :_)
+                                         (map expand-query preds))))
+(defmacro gseq [& preds]
+  `(clojure.spec.alpha/and seq? (gcat ~@preds)))
+
+(defmacro gvec [& preds]
+  `(clojure.spec.alpha/and vector? (gcat ~@preds)))
 
 ;; (defn query [query-string]
 ;;   (let [parsed (sci/parse-next (init) (sci/reader query-string))]
