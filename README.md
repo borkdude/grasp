@@ -14,6 +14,8 @@ The `grasp.api` namespace currently exposes:
 - `(grasp-string string spec)`: returns matched sexprs in string for spec.
 - `resolve-symbol`: returns the resolved symbol for a symbol, taking into
   account aliases and refers.
+- `unwrap`: see [Finding keywords](#finding-keywords).
+- `cat`, `or`, `seq`, `vec`: see [Convenience macros](#convenience-macros).
 
 ## Status
 
@@ -173,7 +175,7 @@ All of these macros support passing in a single quoted value for matching a
 literal thing `'foo` for matching that symbol instead of
 `#{'foo}`. Additionally, they let you write specs without names for each parsed
 item: `(g/cat 'foo int?)` instead of `(s/cat :s #{'foo} :i int?)`. The `seq` and
-`vec` macro is like the `cat` macro but additionally check for `seq?` and
+`vec` macros are like the `cat` macro but additionally check for `seq?` and
 `vector?` respectively.
 
 ## Binary
