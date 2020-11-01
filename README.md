@@ -209,11 +209,11 @@ The evaluated code from `-e` or `-f` may return a spec (or spec keyword) or call
 
 ``` clojure
 (require '[clojure.spec.alpha :as s])
-(require '[grasp.api :refer [unwrap set-opts!]])
+(require '[grasp.api :as g])
 
-(s/def ::spec (fn [x] (= :clojure.spec.alpha/invalid (unwrap x))))
+(s/def ::spec (fn [x] (= :clojure.spec.alpha/invalid (g/unwrap x))))
 
-(set-opts! {:spec ::spec :opts {:wrap true}})
+(g/set-opts! {:spec ::spec :opts {:wrap true}})
 ```
 
 This example will also set wrapping values automatically.
