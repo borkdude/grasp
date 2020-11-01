@@ -169,7 +169,7 @@ More examples in [examples](examples).
 
 ## Convenience macros
 
-Grasp exposes the `cat`, `seq` and `vec`, and `or` convenience macros.
+Grasp exposes the `cat`, `seq`, `vec` and `or` convenience macros.
 
 All of these macros support passing in a single quoted value for matching a
 literal thing `'foo` for matching that symbol instead of
