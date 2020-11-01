@@ -12,7 +12,7 @@ The `grasp.api` namespace currently exposes:
   it will be scanned recursively for source files ending with `.clj`, `.cljs` or
   `.cljc`.
 - `(grasp-string string spec)`: returns matched sexprs in string for spec.
-- `resolve-symbol`: returns the resolved symbol for a symbol, taking into
+- `resolve-sym`: returns the resolved symbol for a symbol, taking into
   account aliases and refers.
 - `unwrap`: see [Finding keywords](#finding-keywords).
 - `cat`, `or`, `seq`, `vec`: see [Convenience macros](#convenience-macros).
@@ -88,7 +88,7 @@ Find all usages of `clojure.set/difference`:
    (g/grasp "/Users/borkdude/git/clojure/src"
                 (fn [sym]
                   (when (symbol? sym)
-                    (= 'clojure.set/difference (g/resolve-symbol sym)))))
+                    (= 'clojure.set/difference (g/resolve-sym sym)))))
    (map table-row)
    pprint/print-table)
 ```

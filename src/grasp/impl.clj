@@ -214,7 +214,7 @@
                 :else ;; assume file
                 (grasp-string (slurp file) spec (assoc opts :url (.toURL file)))))))
 
-(defn resolve-symbol [sym]
+(defn resolve-sym [sym]
   (p/fully-qualify *ctx* sym))
 
 ;;;; QUERY
