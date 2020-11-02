@@ -2,7 +2,7 @@
         borkdude/sci {:git/url "https://github.com/borkdude/sci"
                       :sha "cb96d7fb2a37a7c21c78fc145948d6867c30936a"}}
  :aliases {:native {:jvm-opts ["-Dclojure.compiler.direct-linking=true"]
-                    :extra-deps {org.clojure/clojure {:mvn/version "1.10.2-alpha2"}
+                    :extra-deps {org.clojure/clojure {:mvn/version "1.10.2-alpha3"}
                                  org.clojure/tools.cli {:mvn/version "1.0.194"}}}
            :test {:extra-paths ["test"]
                   :extra-deps {cognitect-labs/test-runner
