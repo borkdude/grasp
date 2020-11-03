@@ -16,6 +16,7 @@ The `grasp.api` namespace currently exposes:
   account aliases and refers.
 - `unwrap`: see [Finding keywords](#finding-keywords).
 - `cat`, `or`, `seq`, `vec`: see [Convenience macros](#convenience-macros).
+- `*`, `?`, `+`: aliases for `(s/* any?)`, etc.
 
 ## Status
 
