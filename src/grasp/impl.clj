@@ -1,7 +1,8 @@
 (ns grasp.impl
   {:no-doc true}
-  (:refer-clojure :exclude [cat or seq vec])
-  (:require [clojure.java.io :as io]
+  (:refer-clojure :exclude [cat or seq vec map])
+  (:require [clojure.core :as c]
+            [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.walk :refer [postwalk]]
             [grasp.impl :as impl]
@@ -56,7 +57,7 @@
               (when (clojure.core/or (identical? :require fx)
                         (identical? :require-macros fx))
                 (let [decomposed (keep decompose-clause (rest x))
-                      recomposed (map recompose-clause decomposed)]
+                      recomposed (c/map recompose-clause decomposed)]
                   (run! #(stub-refers ctx %) decomposed)
                   (list* :require recomposed))))
             x))
@@ -70,9 +71,9 @@
 
 (defn process-require [ctx req]
   (let [quoted (keep-quoted (rest req))
-        decomposed (map decompose-clause quoted)]
+        decomposed (c/map decompose-clause quoted)]
     (run! #(stub-refers ctx %) decomposed)
-    (list* 'require (map (fn [clause]
+    (list* 'require (c/map (fn [clause]
                            (list 'quote (recompose-clause clause)))
                          decomposed))))
 
@@ -103,7 +104,7 @@
                        (not (instance? Wrapper %)))
                  clojure.core/seq)
        (filter #(valid-fn spec %))
-       (map #(with-url url %))))
+       (c/map #(with-url url %))))
 
 (defn log-error [_ctx url reader form cause]
   (binding [*out* *err*]
@@ -230,16 +231,27 @@
     #{x}
     x))
 
-(def kws (map keyword (repeatedly gensym)))
+(def kws (c/map keyword (repeatedly gensym)))
 
 (defmacro or [& preds]
   `(clojure.spec.alpha/or ~@(interleave kws
-                                        (map expand-query preds))))
+                                        (c/map expand-query preds))))
 (defmacro cat [& preds]
   `(clojure.spec.alpha/cat ~@(interleave kws
-                                         (map expand-query preds))))
+                                         (c/map expand-query preds))))
 (defmacro seq [& preds]
   `(clojure.spec.alpha/and seq? (cat ~@preds)))
 
 (defmacro vec [& preds]
   `(clojure.spec.alpha/and vector? (cat ~@preds)))
+
+;; TODO: this should probably be
+#_ (g/map {:foo any?
+           :bar (g/seq '1 '2 '3)})
+(defmacro map [& ks]
+  (let [qualified-keys (filter qualified-keyword? ks)
+        unqualified-keys (remove qualified-keyword? ks)
+        unqualified-keys (c/map (fn [k]
+                                  (keyword (name k) (name k))) unqualified-keys)]
+    `(clojure.spec.alpha/keys :req-un ~unqualified-keys
+                              :req ~qualified-keys)))

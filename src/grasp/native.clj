@@ -60,6 +60,7 @@
    'cat (sci/copy-var impl/cat gns)
    'seq (sci/copy-var impl/seq gns)
    'vec (sci/copy-var impl/vec gns)
+   'map (sci/copy-var impl/map gns)
    '*   (sci/copy-var * gns)
    '?   (sci/copy-var ? gns)
    '+   (sci/copy-var + gns)})
