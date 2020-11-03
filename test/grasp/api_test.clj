@@ -69,3 +69,8 @@
                                          (fn [x]
                                            (nil? (unwrap x))))
                                   {:wrap true})))))
+(deftest *-test
+  (is  (= '({:line 1, :column 1, :end-line 1, :end-column 12})
+          (map meta (grasp-string "[foo 1 2 3]"
+                                  (g/vec 'foo
+                                         g/*))))))

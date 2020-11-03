@@ -1,5 +1,5 @@
 (ns grasp.api
-  (:refer-clojure :exclude [cat or seq vec])
+  (:refer-clojure :exclude [cat or seq vec * +])
   (:require [clojure.spec.alpha :as s]
             [grasp.impl :as impl]))
 
@@ -23,3 +23,7 @@
 (def ^:macro or  @#'impl/or)
 (def ^:macro seq @#'impl/seq)
 (def ^:macro vec @#'impl/vec)
+
+(def * (s/* any?))
+(def ? (s/? any?))
+(def + (s/? any?))

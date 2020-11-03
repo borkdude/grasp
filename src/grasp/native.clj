@@ -1,4 +1,5 @@
 (ns grasp.native
+  (:refer-clojure :exclude [* ? +])
   (:gen-class)
   (:require
    [clojure.string :as str]
@@ -47,6 +48,10 @@
 (defn set-opts! [m]
   (reset! opts m))
 
+(def * (s/* any?))
+(def ? (s/? any?))
+(def + (s/? any?))
+
 (def grasp-api-ns
   {'unwrap (sci/copy-var impl/unwrap gns)
    'resolve-sym (sci/copy-var impl/resolve-sym gns)
@@ -54,7 +59,10 @@
    'or  (sci/copy-var impl/or gns)
    'cat (sci/copy-var impl/cat gns)
    'seq (sci/copy-var impl/seq gns)
-   'vec (sci/copy-var impl/vec gns)})
+   'vec (sci/copy-var impl/vec gns)
+   '*   (sci/copy-var * gns)
+   '?   (sci/copy-var ? gns)
+   '+   (sci/copy-var + gns)})
 
 (defn eval-spec [spec-string]
   (sci/eval-string spec-string {:aliases {'g 'grasp.api
@@ -108,7 +116,7 @@
                                   str/split-lines))]
             m batch]
       (let [{:keys [:line :end-line :column :_sexpr]} m]
-        (when lines
+        (when (and lines line)
           (let [snippet (subvec lines (dec line) end-line)
                 ;;conformed (s/conform spec sexpr)
                 snippet (str/join "\n" snippet)]
