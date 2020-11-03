@@ -232,17 +232,19 @@ interface:
 (s/def ::reify
   (s/cat :reify #{'reify}
          :clauses (s/cat :clause ::clause :clauses (s/+ ::clause))))
+
+(def clojure-core (slurp (io/resource "clojure/core.clj")))
+
+(def matches (g/grasp-string clojure-core ::reify))
 ```
 
 The matched s-expressions can be conformed and then pattern-matched using
 libraries like [meander](https://github.com/noprompt/meander):
 
 ``` clojure
-(def clojure-core (slurp (io/resource "clojure/core.clj")))
-
-(def matches (g/grasp-string clojure-core ::reify))
-
 (def conformed (map #(s/conform ::reify %) matches)
+
+(require '[meander.epsilon :as m])
 
 (m/find
   (first conformed)
