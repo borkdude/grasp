@@ -219,6 +219,43 @@ The evaluated code from `-e` or `-f` may return a spec (or spec keyword) or call
 
 This example will also set wrapping values automatically.
 
+### Combining with other libraries
+
+#### Meander
+
+Revisiting the `::reify` spec which finds reify usage with more than one
+interface:
+
+``` clojure
+(s/def ::clause (s/cat :sym symbol? :lists (s/+ list?)))
+
+(s/def ::reify
+  (s/cat :reify #{'reify}
+         :clauses (s/cat :clause ::clause :clauses (s/+ ::clause))))
+```
+
+The matched s-expressions can be conformed and then pattern-matched using
+libraries like [meander](https://github.com/noprompt/meander):
+
+``` clojure
+(def clojure-core (slurp (io/resource "clojure/core.clj")))
+
+(def matches (g/grasp-string clojure-core ::reify))
+
+(def conformed (map #(s/conform ::reify %) matches)
+
+(m/find
+  (first conformed)
+  {:clauses {:clause {:sym !interface} :clauses [{:sym !interface} ...]}}
+  !interface)
+```
+
+Returns:
+
+``` clojure
+[clojure.lang.IDeref clojure.lang.IBlockingDeref clojure.lang.IPending java.util.concurrent.Future]
+```
+
 ### Build
 
 Run `script/compile` to compile the `grasp` binary using
