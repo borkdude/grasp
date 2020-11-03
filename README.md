@@ -242,7 +242,7 @@ The matched s-expressions can be conformed and then pattern-matched using
 libraries like [meander](https://github.com/noprompt/meander):
 
 ``` clojure
-(def conformed (map #(s/conform ::reify %) matches)
+(def conformed (map #(s/conform ::reify %) matches))
 
 (require '[meander.epsilon :as m])
 
