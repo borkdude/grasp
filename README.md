@@ -241,24 +241,7 @@ interface:
 (def conformed (map #(s/conform ::reify %) matches))
 ```
 
-#### Meander
-
-```
-(require '[meander.epsilon :as m])
-
-(m/find
-  (first conformed)
-  {:clauses {:clause {:sym !interface} :clauses [{:sym !interface} ...]}}
-  !interface)
-```
-
-Returns:
-
-``` clojure
-[clojure.lang.IDeref clojure.lang.IBlockingDeref clojure.lang.IPending java.util.concurrent.Future]
-```
-
-### Matchete
+#### [Matchete](https://github.com/xapix-io/matchete)
 
 ``` clojure
 (require '[matchete.core :as mc])
@@ -275,6 +258,23 @@ Returns:
 
 ``` clojure
 {!interface [clojure.lang.IDeref clojure.lang.IBlockingDeref clojure.lang.IPending java.util.concurrent.Future]}
+```
+
+#### [Meander](https://github.com/noprompt/meander)
+
+```
+(require '[meander.epsilon :as m])
+
+(m/find
+  (first conformed)
+  {:clauses {:clause {:sym !interface} :clauses [{:sym !interface} ...]}}
+  !interface)
+```
+
+Returns:
+
+``` clojure
+[clojure.lang.IDeref clojure.lang.IBlockingDeref clojure.lang.IPending java.util.concurrent.Future]
 ```
 
 ### Build
