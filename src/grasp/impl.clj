@@ -255,3 +255,13 @@
                                   (keyword (name k) (name k))) unqualified-keys)]
     `(clojure.spec.alpha/keys :req-un ~unqualified-keys
                               :req ~qualified-keys)))
+
+(defn expand [x]
+  (cond (and (seq? x)
+             (= 'clojure.core/unquote (first x)))
+        (second x)
+        (seq? x) `(seq ~@x)
+        :else x))
+
+(defmacro q [query]
+  (postwalk expand query))
