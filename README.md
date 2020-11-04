@@ -219,6 +219,64 @@ The evaluated code from `-e` or `-f` may return a spec (or spec keyword) or call
 
 This example will also set wrapping values automatically.
 
+### Pattern matching
+
+The matched s-expressions can be conformed and then pattern-matched using
+libraries like [meander](https://github.com/noprompt/meander).
+
+Revisiting the `::reify` spec which finds reify usage with more than one
+interface:
+
+``` clojure
+(s/def ::clause (s/cat :sym symbol? :lists (s/+ list?)))
+
+(s/def ::reify
+  (s/cat :reify #{'reify}
+         :clauses (s/cat :clause ::clause :clauses (s/+ ::clause))))
+
+(def clojure-core (slurp (io/resource "clojure/core.clj")))
+
+(def matches (g/grasp-string clojure-core ::reify))
+
+(def conformed (map #(s/conform ::reify %) matches))
+```
+
+#### [Matchete](https://github.com/xapix-io/matchete)
+
+``` clojure
+(require '[matchete.core :as mc])
+
+(def pattern
+  {:clauses
+   {:clause {:sym '!interface}
+    :clauses (mc/each {:sym '!interface})}})
+
+(first (mc/matches pattern (first conformed)))
+```
+
+Returns:
+
+``` clojure
+{!interface [clojure.lang.IDeref clojure.lang.IBlockingDeref clojure.lang.IPending java.util.concurrent.Future]}
+```
+
+#### [Meander](https://github.com/noprompt/meander)
+
+```
+(require '[meander.epsilon :as m])
+
+(m/find
+  (first conformed)
+  {:clauses {:clause {:sym !interface} :clauses [{:sym !interface} ...]}}
+  !interface)
+```
+
+Returns:
+
+``` clojure
+[clojure.lang.IDeref clojure.lang.IBlockingDeref clojure.lang.IPending java.util.concurrent.Future]
+```
+
 ### Build
 
 Run `script/compile` to compile the `grasp` binary using
