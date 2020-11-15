@@ -82,7 +82,7 @@
              :load-fn (fn [_] "")
              :readers (fn [x]
                         ;; TODO: this doesn't seem to work
-                        (prn :x x)
+                        ;; (prn :x x)
                         identity)
              :features #{:clj :cljs}}
             ))
@@ -220,6 +220,8 @@
                 (str/ends-with? path ".jar")
                 (mapcat #(grasp-string (:source %) spec (assoc opts :url (:url %)))
                         (sources-from-jar file))
+                (= "-" path)
+                (grasp-string (slurp *in*) spec (assoc opts :url "stdin"))
                 :else ;; assume file
                 (grasp-string (slurp file) spec (assoc opts :url (.toURL file)))))))
 

@@ -205,8 +205,8 @@ and Windows users should go to
 It can be invoked like this:
 
 ``` shell
-$ ./grasp ~/git/spec.alpha/src -w -e "(fn [k] (= :clojure.spec.alpha/invalid (unwrap k)))" | wc -l
-      67
+$ ./grasp ~/git/spec.alpha/src -e "(set-opts! {:wrap true}) (fn [k] (= :clojure.spec.alpha/invalid (unwrap k)))" | grep file | wc -l
+      68
 ```
 
 The binary supports the following options:
@@ -230,6 +230,43 @@ The evaluated code from `-e` or `-f` may return a spec (or spec keyword) or call
 (s/def ::spec (fn [x] (= :clojure.spec.alpha/invalid (g/unwrap x))))
 
 (g/set-opts! {:spec ::spec :wrap true})
+```
+
+If `nil` is returned from the evaluated code and `set-opts!` wasn't called, the
+CLI assumes that code will handle the results and no printing will be
+done. These programs may call `g/grasp` and pass `g/*path*` which contains the
+path that was passed to the CLI.
+
+Full example:
+
+`fn_literal.clj`:
+``` clojure
+(require '[clojure.pprint :as pprint]
+         '[clojure.spec.alpha :as s]
+         '[clojure.string :as str]
+         '[grasp.api :as g])
+
+(s/def ::spec (fn [x]
+                (and (seq? x)
+                     (= 'fn* (first x))
+                     (> (count (second x)) 1)
+                     (some-> x meta :source (str/starts-with? "#(")))))
+
+(let [matches (g/grasp g/*path* ::spec {:source true})
+      rows (map (fn [match]
+                 (let [m (meta match)]
+                   {:source (:source m)
+                    :match match}))
+               matches)]
+  (pprint/print-table rows))
+```
+
+``` clojure
+$ grasp - fn_literal.clj <<< "#(foo %1 %2)"
+
+|  :url | :line |      :source |                    :match |
+|-------+-------+--------------+---------------------------|
+| stdin |     1 | #(foo %1 %2) | (fn* [%1 %2] (foo %1 %2)) |
 ```
 
 ### Pattern matching
