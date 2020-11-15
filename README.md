@@ -174,7 +174,7 @@ function literals that have more than one argument:
 ``` clojure
 (s/def ::fn-literal
   (fn [x] (and (seq? x) (= 'fn* (first x)) (> (count (second x)) 1)
-               (str/starts-with? (:source (meta x)) "#("))))
+               (some-> x meta :source (str/starts-with? "#("))))))
 
 (def match (first (g/grasp-string "#(+ % %2)" ::fn-literal {:source true})))
 
@@ -253,18 +253,16 @@ Full example:
          '[clojure.string :as str]
          '[grasp.api :as g])
 
-(s/def ::spec (fn [x]
-                (and (seq? x)
-                     (= 'fn* (first x))
-                     (> (count (second x)) 1)
-                     (some-> x meta :source (str/starts-with? "#(")))))
+(s/def ::fn-literal
+  (fn [x] (and (seq? x) (= 'fn* (first x)) (> (count (second x)) 1)
+               (some-> x meta :source (str/starts-with? "#(")))))
 
-(let [matches (g/grasp g/*path* ::spec {:source true})
+(let [matches (g/grasp g/*path* ::fn-literal {:source true})
       rows (map (fn [match]
-                 (let [m (meta match)]
-                   {:source (:source m)
-                    :match match}))
-               matches)]
+                  (let [m (meta match)]
+                    {:source (:source m)
+                     :match match}))
+                matches)]
   (pprint/print-table rows))
 ```
 
