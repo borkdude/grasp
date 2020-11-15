@@ -164,6 +164,22 @@ The output:
 {:line 6, :column 13, :end-line 6, :end-column 38, :url "file:/tmp/code.clj"}
 ```
 
+### Matching on source string
+
+Using the option `:source true`, grasp will attach the source string as metadata
+on parsed s-expressions. This can be used to match on things like function
+literals like `#(foo %)` or keywords like `::foo`. For example: we can grasp for
+function literals that have more than one argument:
+
+``` clojure
+(deftest source-test
+  (let [matches (g/grasp-string "#(+ % %2)"
+                                (fn [x] (and (seq? x) (= 'fn* (first x)) (> (count (second x)) 1)
+                                             (str/starts-with? (:source (meta x)) "#(")))
+                                {:source true})]
+    (is (= "#(+ % %2)" (:source (meta (first matches)))))))
+```
+
 ### More examples
 
 More examples in [examples](examples).

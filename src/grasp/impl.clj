@@ -4,6 +4,7 @@
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.walk :refer [postwalk]]
+            [edamame.core :as e]
             [grasp.impl :as impl]
             [sci.core :as sci]
             [sci.impl.parser :as p]))
@@ -98,7 +99,8 @@
 (defn match-sexprs
   [source-tree spec valid-fn url]
   (->> source-tree
-       (tree-seq #(and (seqable? %)
+       (tree-seq #(and ;; (do (prn (meta %)) true)
+                       (seqable? %)
                        (not (string? %))
                        (not (instance? Wrapper %)))
                  clojure.core/seq)
@@ -138,21 +140,28 @@
 
 (defn grasp-string
   [s spec opts]
-  (let [ctx (init)
-        reader (sci/reader s)]
+  (let [source? (:source opts)
+        ctx (init)
+        reader (if source?
+                 (e/source-reader s)
+                 (e/reader s))]
     (binding [*ctx* ctx] ;; grasp-string returns a strict seqable (vector) of
                          ;; matches to ensure *ctx* is still bound
       (sci/with-bindings {sci/ns @sci/ns}
         (loop [matches []]
           (let [url (:url opts)
                 nexpr (try (sci/parse-next ctx reader
-                                           (if (:wrap opts)
-                                             {:postprocess
-                                              (fn [{:keys [:obj :loc]}]
-                                                (if (iobj? obj)
-                                                  (vary-meta obj merge loc)
-                                                  (with-meta (->Wrapper obj) loc)))}
-                                             nil))
+                                           (cond-> nil
+                                             (:wrap opts)
+                                             (assoc :postprocess
+                                                    (fn [{:keys [:obj :loc] :as m}]
+                                                      (if (iobj? obj)
+                                                        (vary-meta obj merge loc)
+                                                        (with-meta (->Wrapper obj)
+                                                          (cond-> loc
+                                                            source? (assoc :source (:source m)))))))
+                                             (:source opts)
+                                             (assoc :source true)))
                            (catch Exception _
                              nil))]
             (if (= ::sci/eof nexpr)

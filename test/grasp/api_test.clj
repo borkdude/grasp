@@ -1,6 +1,7 @@
 (ns grasp.api-test
   (:require [clojure.java.io :as io]
             [clojure.spec.alpha :as s]
+            [clojure.string :as str]
             [clojure.test :as t :refer [deftest is]]
             [grasp.api :as g :refer [grasp grasp-string unwrap]]))
 
@@ -74,3 +75,10 @@
           (map meta (grasp-string "[foo 1 2 3]"
                                   (g/vec 'foo
                                          g/*))))))
+
+(deftest source-test
+  (let [matches (g/grasp-string "#(+ % %2)"
+                                (fn [x] (and (seq? x) (= 'fn* (first x)) (> (count (second x)) 1)
+                                             (str/starts-with? (:source (meta x)) "#(")))
+                                {:source true})]
+    (is (= "#(+ % %2)" (:source (meta (first matches)))))))
