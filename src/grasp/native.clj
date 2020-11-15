@@ -75,54 +75,54 @@
 
 (def cli-options [["-p" "--path PATH" "Path with sources"]
                   ["-e" "--expr SPEC" "Eval spec from expr"]
-                  ["-f" "--file SPEC" "Read spec from file"]
-                  ["-w" "--wrap"]])
+                  ["-f" "--file SPEC" "Read spec from file"]])
 
 (defn -main [& args]
-  (let [parsed (parse-opts args cli-options)
-        args (:arguments parsed)
-        arg-count (count args)
-        options (:options parsed)
-        [path-opt spec-opt] [(:path options) (or (:expr options)
-                                                 (when-let [f (:file options)]
-                                                   (slurp f)))]
-        spec (or spec-opt (case arg-count
-                            1 (first args) ;; when no spec-opt, this must be the
-                                           ;; spec, since path is optional
-                            2 (second args)
-                            (throw (ex-info "No spec provided." parsed))))
-        path (or path-opt (case arg-count
-                            2 (first args)
-                            1 (when spec-opt ;; spec was not provided via arg
-                                (first args))
-                            "."))
-        spec (eval-spec spec)
-        spec (or (:spec @opts) spec)
-        wrap (or (:wrap options) (some-> @opts :opts :wrap))
-        from-stdin? (= "-" path)
-        stdin (when from-stdin? (slurp *in*))
-        matches (if from-stdin?
-                  (impl/grasp-string stdin spec {:valid-fn s/valid?
-                                                 :wrap wrap})
-                  (impl/grasp path spec {:valid-fn s/valid?
-                                         :wrap wrap}))
-        matches (map (fn [m] (assoc (meta m) :sexpr m)) matches)
-        batches (partition-by :url matches)]
-    (doseq [batch batches
-            :let [url (:url (first batch))
-                  lines (if from-stdin?
-                          (-> stdin str/split-lines)
-                          (some-> url slurp
-                                  str/split-lines))]
-            m batch]
-      (let [{:keys [:line :end-line :column :_sexpr]} m]
-        (when (and lines line)
-          (let [snippet (subvec lines (dec line) end-line)
-                ;;conformed (s/conform spec sexpr)
-                snippet (str/join "\n" snippet)]
-            (println (str (if from-stdin? "stdin"
-                              url) ":"
-                          line ":" column "\n" snippet))
-            ;; (prn conformed)
-            (println)))))))
+  (sci/with-bindings {sci/out *out*}
+    (let [parsed (parse-opts args cli-options)
+          args (:arguments parsed)
+          arg-count (count args)
+          options (:options parsed)
+          [path-opt spec-opt] [(:path options) (or (:expr options)
+                                                   (when-let [f (:file options)]
+                                                     (slurp f)))]
+          spec (or spec-opt (case arg-count
+                              1 (first args) ;; when no spec-opt, this must be the
+                              ;; spec, since path is optional
+                              2 (second args)
+                              (throw (ex-info "No spec provided." parsed))))
+          path (or path-opt (case arg-count
+                              2 (first args)
+                              1 (when spec-opt ;; spec was not provided via arg
+                                  (first args))
+                              "."))
+          spec (eval-spec spec)
+          spec (or (:spec @opts) spec)
+          opts @opts
+          from-stdin? (= "-" path)
+          stdin (when from-stdin? (slurp *in*))
+          matches (if from-stdin?
+                    (impl/grasp-string stdin spec (merge {:valid-fn s/valid?}
+                                                         opts))
+                    (impl/grasp path spec (merge {:valid-fn s/valid?}
+                                                 opts)))
+          matches (map (fn [m] (assoc (meta m) :sexpr m)) matches)
+          batches (partition-by :url matches)]
+      (doseq [batch batches
+              :let [url (:url (first batch))
+                    lines (if from-stdin?
+                            (-> stdin str/split-lines)
+                            (some-> url slurp
+                                    str/split-lines))]
+              m batch]
+        (let [{:keys [:line :end-line :column :_sexpr]} m]
+          (when (and lines line)
+            (let [snippet (subvec lines (dec line) end-line)
+                  ;;conformed (s/conform spec sexpr)
+                  snippet (str/join "\n" snippet)]
+              (println (str (if from-stdin? "stdin"
+                                url) ":"
+                            line ":" column "\n" snippet))
+              ;; (prn conformed)
+              (println))))))))
 

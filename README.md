@@ -215,14 +215,13 @@ The binary supports the following options:
 -p, --path: path
 -e, --expr: spec from expr
 -f, --file: spec from file
--w, --wrap: wrap non-metadata supporting objects
 ```
 
 The path and spec may also be provided without flags, like `grasp <path>
 <spec>`. Use `-` for grasping from stdin.
 
 The evaluated code from `-e` or `-f` may return a spec (or spec keyword) or call
-`set-opts!` with a map that contains `:spec` and/or `:opts`. E.g.:
+    `set-opts!` with a map that contains `:spec` and other options. E.g.:
 
 ``` clojure
 (require '[clojure.spec.alpha :as s])
@@ -230,10 +229,8 @@ The evaluated code from `-e` or `-f` may return a spec (or spec keyword) or call
 
 (s/def ::spec (fn [x] (= :clojure.spec.alpha/invalid (g/unwrap x))))
 
-(g/set-opts! {:spec ::spec :opts {:wrap true}})
+(g/set-opts! {:spec ::spec :wrap true})
 ```
-
-This example will also set wrapping values automatically.
 
 ### Pattern matching
 
