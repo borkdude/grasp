@@ -172,12 +172,19 @@ literals like `#(foo %)` or keywords like `::foo`. For example: we can grasp for
 function literals that have more than one argument:
 
 ``` clojure
-(deftest source-test
-  (let [matches (g/grasp-string "#(+ % %2)"
-                                (fn [x] (and (seq? x) (= 'fn* (first x)) (> (count (second x)) 1)
-                                             (str/starts-with? (:source (meta x)) "#(")))
-                                {:source true})]
-    (is (= "#(+ % %2)" (:source (meta (first matches)))))))
+(s/def ::fn-literal
+  (fn [x] (and (seq? x) (= 'fn* (first x)) (> (count (second x)) 1)
+               (str/starts-with? (:source (meta x)) "#("))))
+
+(def match (first (g/grasp-string "#(+ % %2)" ::fn-literal {:source true})))
+
+(prn [match (meta match)])
+```
+
+Output:
+
+``` clojure
+[(fn* [%1 %2] (+ %1 %2)) {:source "#(+ % %2)", :line 1, :column 1, :end-line 1, :end-column 10}]
 ```
 
 ### More examples
