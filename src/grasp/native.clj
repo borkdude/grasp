@@ -70,7 +70,7 @@
 
 (def grasp-api-ns
   {'unwrap (sci/copy-var impl/unwrap gns)
-   'resolve-sym (sci/copy-var impl/resolve-sym gns)
+   'resolve-symbol (sci/copy-var impl/resolve-symbol gns)
    'set-opts! (sci/copy-var set-opts! gns)
    'or  (sci/copy-var impl/or gns)
    'cat (sci/copy-var impl/cat gns)

@@ -33,7 +33,7 @@
              (->> (grasp-string prog
                                 (fn [sym]
                                   (when (symbol? sym)
-                                    (= 'clojure.set/difference (g/resolve-sym sym)))))
+                                    (= 'clojure.set/difference (g/resolve-symbol sym)))))
                   (map meta))))))
 
 (deftest classpath-test

@@ -13,8 +13,8 @@
   ([string spec opts]
    (impl/grasp-string string spec (assoc opts :valid-fn s/valid?))))
 
-(defn resolve-sym [sym]
-  (impl/resolve-sym sym))
+(defn resolve-symbol [sym]
+  (impl/resolve-symbol sym))
 
 (defn unwrap [wrapped]
   (impl/unwrap wrapped))
