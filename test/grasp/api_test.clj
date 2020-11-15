@@ -82,3 +82,11 @@
                                              (str/starts-with? (:source (meta x)) "#(")))
                                 {:source true})]
     (is (= "#(+ % %2)" (:source (meta (first matches)))))))
+
+(deftest in-ns-test
+  (let [matches (g/grasp-string "(in-ns 'foo) ::foo"
+                                (fn [x] (= :foo/foo (unwrap x)))
+                                {:wrap true
+                                 :source true})]
+    (is (= '({:line 1, :column 14, :end-line 1, :end-column 18, :source "::foo"})
+           (map meta matches)))))

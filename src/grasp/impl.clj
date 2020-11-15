@@ -77,10 +77,18 @@
                            (list 'quote (recompose-clause clause)))
                          decomposed))))
 
+(defn process-in-ns [_ctx req]
+  (let [quoted (keep-quoted (rest req))
+        quoted (map (fn [ns]
+                      (list 'quote ns))
+                    quoted)]
+    (when (clojure.core/seq quoted)
+      (list* 'in-ns quoted))))
+
 (defn init []
   (sci/init {;; never load namespaces
              :load-fn (fn [_] "")
-             :readers (fn [x]
+             :readers (fn [_x]
                         ;; TODO: this doesn't seem to work
                         ;; (prn :x x)
                         identity)
@@ -166,23 +174,32 @@
                              nil))]
             (if (= ::sci/eof nexpr)
               matches
-              (let [form
+              (let [
+                    form
                     (if (seq? nexpr)
-                      (cond (= 'ns (first nexpr))
-                            (let [ns-form (unwrap-all nexpr)
-                                  ns-form (process-ns ctx ns-form)]
-                              (try (sci/eval-form ctx ns-form)
-                                   (catch Exception e
-                                     (log-error ctx url reader ns-form e)))
-                              nexpr)
-                            (= 'require (first nexpr))
-                            (let [req-form (unwrap-all nexpr)
-                                  req-form (process-require ctx req-form)]
-                              (try (sci/eval-form ctx req-form)
-                                   (catch Exception e
-                                     (log-error url ctx reader nexpr e)))
-                              nexpr)
-                            :else nexpr)
+                      (let [fexpr (first nexpr)]
+                        (cond (= 'ns fexpr)
+                              (let [ns-form (unwrap-all nexpr)
+                                    ns-form (process-ns ctx ns-form)]
+                                (try (sci/eval-form ctx ns-form)
+                                     (catch Exception e
+                                       (log-error ctx url reader ns-form e)))
+                                nexpr)
+                              (= 'require fexpr)
+                              (let [req-form (unwrap-all nexpr)
+                                    req-form (process-require ctx req-form)]
+                                (try (sci/eval-form ctx req-form)
+                                     (catch Exception e
+                                       (log-error url ctx reader nexpr e)))
+                                nexpr)
+                              (= 'in-ns fexpr)
+                              (let [form (unwrap-all nexpr)
+                                    form (process-in-ns ctx form)]
+                                (try (sci/eval-form ctx form)
+                                     (catch Exception e
+                                       (log-error url ctx reader nexpr e)))
+                                nexpr)
+                              :else nexpr))
                       nexpr)
                     matched (match-sexprs form spec (:valid-fn opts) url)]
                 (recur (into matches matched))))))))))
