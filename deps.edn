@@ -1,6 +1,5 @@
-{:deps {#_#_borkdude/sci {:local/root "../babashka/sci"}
-        borkdude/sci {:git/url "https://github.com/borkdude/sci"
-                      :sha "4d8d05096975a66be312ba2162d04fc53ca6b761"}}
+{:deps {borkdude/sci {:git/url "https://github.com/borkdude/sci"
+                      :sha "40fb835edfd2c49dfbc73f041d05d4c6b3401f26"}}
  :aliases {:native {:jvm-opts ["-Dclojure.compiler.direct-linking=true"]
                     :extra-deps {org.clojure/clojure {:mvn/version "1.10.2-alpha3"}
                                  org.clojure/tools.cli {:mvn/version "1.0.194"}}}

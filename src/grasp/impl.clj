@@ -52,10 +52,11 @@
 (defn process-ns
   [ctx ns]
   (keep (fn [x]
-          (if (seq? x)
+          (if (seqable? x) ;; for some reason pathom has [:require-macros com.wsscode.pathom.connect] in a vector...
             (let [fx (first x)]
-              (when (clojure.core/or (identical? :require fx)
-                        (identical? :require-macros fx))
+              (when (clojure.core/or
+                     (identical? :require fx)
+                     (identical? :require-macros fx))
                 (let [decomposed (keep decompose-clause (rest x))
                       recomposed (map recompose-clause decomposed)]
                   (run! #(stub-refers ctx %) decomposed)
@@ -154,7 +155,7 @@
                  (e/source-reader s)
                  (e/reader s))]
     (binding [*ctx* ctx] ;; grasp-string returns a strict seqable (vector) of
-                         ;; matches to ensure *ctx* is still bound
+      ;; matches to ensure *ctx* is still bound
       (sci/with-bindings {sci/ns @sci/ns}
         (loop [matches []]
           (let [url (:url opts)
@@ -174,8 +175,7 @@
                              nil))]
             (if (= ::sci/eof nexpr)
               matches
-              (let [
-                    form
+              (let [form
                     (if (seq? nexpr)
                       (let [fexpr (first nexpr)]
                         (cond (= 'ns fexpr)
