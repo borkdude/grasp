@@ -160,7 +160,7 @@
         (loop [matches []]
           (let [url (:url opts)
                 nexpr (try (sci/parse-next ctx reader
-                                           (cond-> nil
+                                           (cond-> {:location? (fn [_] true)}
                                              (:wrap opts)
                                              (assoc :postprocess
                                                     (fn [{:keys [:obj :loc] :as m}]
@@ -170,7 +170,11 @@
                                                           (cond-> loc
                                                             source? (assoc :source (:source m)))))))
                                              (:source opts)
-                                             (assoc :source true)))
+                                             (assoc :source true)
+                                             (:end-location opts)
+                                             (assoc :end-location true
+                                                    :end-row-key :end-line
+                                                    :end-col-key :end-column)))
                            (catch Exception _
                              nil))]
             (if (= ::sci/eof nexpr)

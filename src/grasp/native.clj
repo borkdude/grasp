@@ -123,6 +123,7 @@
                spec (eval-spec spec path)
                spec (or (:spec @opts) spec)
                opts @opts
+               opts (assoc opts :end-location true)
                from-stdin? (= "-" path)
                stdin (when (and spec from-stdin?) (slurp *in*))
                matches (when spec

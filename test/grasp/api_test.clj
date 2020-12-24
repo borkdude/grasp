@@ -26,10 +26,10 @@
 (difference #{1 2 3} #{2 3 4})
 (set/difference #{1 2 3} #{2 3 4})
 (clojure.set/difference #{1 2 3} #{2 3 4})"]
-    (is (= [{:line 2, :column 40, :end-line 2, :end-column 50}
-            {:line 3, :column 2, :end-line 3, :end-column 12}
-            {:line 4, :column 2, :end-line 4, :end-column 16}
-            {:line 5, :column 2, :end-line 5, :end-column 24}]
+    (is (= [{:line 2, :column 40}
+            {:line 3, :column 2}
+            {:line 4, :column 2}
+            {:line 5, :column 2}]
              (->> (grasp-string prog
                                 (fn [sym]
                                   (when (symbol? sym)
@@ -42,8 +42,8 @@
        (is)))
 
 (deftest keyword-test
-  (is  (= '({:line 6, :column 13, :end-line 6, :end-column 27}
-            {:line 7, :column 13, :end-line 7, :end-column 38})
+  (is  (= '({:line 6, :column 13}
+            {:line 7, :column 13})
           (map meta (grasp-string "
 (ns my.cljs.app.views
   (:require [my.cljs.app.subs :as subs]
@@ -57,21 +57,21 @@
                                   {:wrap true})))))
 
 (deftest nil-test
-  (is  (= '({:line 1, :column 1, :end-line 1, :end-column 12})
+  (is  (= '({:line 1, :column 1})
           (map meta (grasp-string "(merge nil)"
                                   (s/cat :_ #{'merge}
                                          :_ (fn [x]
                                               (nil? (unwrap x))))
                                   {:wrap true})))))
 (deftest macro-test
-  (is  (= '({:line 1, :column 1, :end-line 1, :end-column 12})
+  (is  (= '({:line 1, :column 1})
           (map meta (grasp-string "(merge nil)"
                                   (g/cat 'merge
                                          (fn [x]
                                            (nil? (unwrap x))))
                                   {:wrap true})))))
 (deftest *-test
-  (is  (= '({:line 1, :column 1, :end-line 1, :end-column 12})
+  (is  (= '({:line 1, :column 1})
           (map meta (grasp-string "[foo 1 2 3]"
                                   (g/vec 'foo
                                          g/*))))))
@@ -88,5 +88,5 @@
                                 (fn [x] (= :foo/foo (unwrap x)))
                                 {:wrap true
                                  :source true})]
-    (is (= '({:line 1, :column 14, :end-line 1, :end-column 18, :source "::foo"})
+    (is (= '({:line 1, :column 14, :source "::foo"})
            (map meta matches)))))
