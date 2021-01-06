@@ -4,10 +4,10 @@ Grep Clojure code using clojure.spec regexes. Inspired by [grape](https://github
 
 ## Why
 
-This tool allows you to find patterns in Clojure code. I use it for doing
-research for new features or changes to [sci](https://github.com/borkdude/sci/issues/485)
-and [clj-kondo](https://github.com/borkdude/clj-kondo) or for Clojure [JIRA
-tickets](https://clojure.atlassian.net/browse/CLJ-1656).
+This tool allows you to find patterns in Clojure code. I use it as a research
+tool for [sci](https://github.com/borkdude/sci/issues/485),
+[clj-kondo](https://github.com/borkdude/clj-kondo) or Clojure
+[tickets](https://clojure.atlassian.net/browse/CLJ-1656).
 
 ## API
 
