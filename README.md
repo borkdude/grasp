@@ -2,6 +2,13 @@
 
 Grep Clojure code using clojure.spec regexes. Inspired by [grape](https://github.com/bfontaine/grape).
 
+## Why
+
+This tool allows you to find patterns in Clojure code. I use it for doing
+research for new features or changes to [sci](https://github.com/borkdude/sci)
+and [clj-kondo](https://github.com/borkdude/clj-kondo) or for Clojure [JIRA
+tickets](https://clojure.atlassian.net/browse/CLJ-1656).
+
 ## API
 
 The `grasp.api` namespace currently exposes:
