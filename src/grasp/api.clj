@@ -26,4 +26,4 @@
 
 (def * (s/* any?))
 (def ? (s/? any?))
-(def + (s/? any?))
+(def + (s/+ any?))
