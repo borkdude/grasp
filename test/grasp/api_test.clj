@@ -2,7 +2,7 @@
   (:require [clojure.java.io :as io]
             [clojure.spec.alpha :as s]
             [clojure.string :as str]
-            [clojure.test :as t :refer [deftest is]]
+            [clojure.test :refer [deftest is]]
             [grasp.api :as g :refer [grasp grasp-string unwrap]]))
 
 (def clojure-core (slurp (io/resource "clojure/core.clj")))
@@ -70,11 +70,18 @@
                                          (fn [x]
                                            (nil? (unwrap x))))
                                   {:wrap true})))))
+
 (deftest *-test
   (is  (= '({:line 1, :column 1})
           (map meta (grasp-string "[foo 1 2 3]"
                                   (g/vec 'foo
                                          g/*))))))
+
+(deftest +-test
+  (is  (= '({:line 1, :column 6})
+          (map meta (grasp-string "[bar][bar 1 2 3]"
+                                  (g/vec 'bar
+                                         g/+))))))
 
 (deftest source-test
   (let [matches (g/grasp-string "#(+ % %2)"
