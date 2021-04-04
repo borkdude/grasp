@@ -54,7 +54,7 @@
 
 (def * (s/* any?))
 (def ? (s/? any?))
-(def + (s/? any?))
+(def + (s/+ any?))
 
 (defn grasp
   ([path-or-paths spec] (grasp path-or-paths spec nil))
