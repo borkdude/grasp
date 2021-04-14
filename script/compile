@@ -7,12 +7,16 @@ if [ -z "$GRAALVM_HOME" ]; then
     exit 1
 fi
 
+if [ -z "$($GRAALVM_HOME/bin/gu list | grep native-image)" ]; then
+  echo "Please install graal's \"native-image\" with"
+  echo "\"\$GRAALVM_HOME/bin/gu\" install native-image"
+  exit 1
+fi
+
 rm -rf classes && mkdir -p classes
 clojure -M:native \
         -e '(println :direct-linking (System/getProperty "clojure.compiler.direct-linking"))' \
         -e "(compile 'grasp.native)"
-
-"$GRAALVM_HOME/bin/gu" install native-image
 
 "$GRAALVM_HOME/bin/native-image" \
     -cp "classes:$(clojure -Spath -A:native)" \
