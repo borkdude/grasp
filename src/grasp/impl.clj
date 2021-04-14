@@ -210,18 +210,22 @@
 
 (defn sources-from-jar
   [^java.io.File jar-file]
-  (with-open [jar (java.util.jar.JarFile. jar-file)]
-    (let [entries (enumeration-seq (.entries jar))
-          entries (filter (fn [^java.util.jar.JarFile$JarFileEntry x]
-                            (let [nm (.getName x)]
-                              (and (not (.isDirectory x)) (source-name? nm)))) entries)]
-      ;; Important that we close the `JarFile` so this has to be strict see GH
-      ;; issue #542. Maybe it makes sense to refactor loading source using
-      ;; transducers so we don't have to load the entire source of a jar file in
-      ;; memory at once?
-      (mapv (fn [^java.util.jar.JarFile$JarFileEntry entry]
-              {:url (java.net.URL. (str "jar:file:" (.getPath jar-file) "!/" (.getName entry)))
-               :source (slurp (.getInputStream jar entry))}) entries))))
+  (try
+    (with-open [jar (java.util.jar.JarFile. jar-file)]
+      (let [entries (enumeration-seq (.entries jar))
+            entries (filter (fn [^java.util.jar.JarFile$JarFileEntry x]
+                              (let [nm (.getName x)]
+                                (and (not (.isDirectory x)) (source-name? nm)))) entries)]
+        ;; Important that we close the `JarFile` so this has to be strict see GH
+        ;; issue #542. Maybe it makes sense to refactor loading source using
+        ;; transducers so we don't have to load the entire source of a jar file in
+        ;; memory at once?
+        (mapv (fn [^java.util.jar.JarFile$JarFileEntry entry]
+                {:url (java.net.URL. (str "jar:file:" (.getPath jar-file) "!/" (.getName entry)))
+                 :source (slurp (.getInputStream jar entry))}) entries)))
+    (catch java.util.zip.ZipException _e
+      ;; skip invalid jar files
+      [])))
 
 (def path-separator (System/getProperty "path.separator"))
 
