@@ -66,6 +66,12 @@
   ([string spec opts]
    (impl/grasp-string string spec (assoc opts :valid-fn s/valid?))))
 
+(defn rsym
+  "Spec for a symbol equal to the provided fully-qualified `sym`
+  so that you don't need to run it through [[resolve-symbol]]."
+  [sym]
+  (s/and symbol? (comp #{sym} impl/resolve-symbol)))
+
 (def path (sci/new-dynamic-var '*path* nil {:ns gns}))
 
 (def grasp-api-ns
@@ -76,7 +82,7 @@
    'cat (sci/copy-var impl/cat gns)
    'seq (sci/copy-var impl/seq gns)
    'vec (sci/copy-var impl/vec gns)
-   'rsym (sci/copy-var + impl/rsym)
+   'rsym (sci/copy-var + rsym)
    '*   (sci/copy-var * gns)
    '?   (sci/copy-var ? gns)
    '+   (sci/copy-var + gns)

@@ -19,7 +19,7 @@
 (defn unwrap [wrapped]
   (impl/unwrap wrapped))
 
-(defn rsym 
+(defn rsym
   "Spec for a symbol equal to the provided fully-qualified `sym`
   so that you don't need to run it through [[resolve-symbol]]."
   [sym]
