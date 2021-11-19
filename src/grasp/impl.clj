@@ -1,6 +1,6 @@
 (ns grasp.impl
   {:no-doc true}
-  (:refer-clojure :exclude [cat or seq vec])
+  (:refer-clojure :exclude [cat list or seq vec])
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.walk :refer [postwalk]]
@@ -75,13 +75,13 @@
         decomposed (map decompose-clause quoted)]
     (run! #(stub-refers ctx %) decomposed)
     (list* 'require (map (fn [clause]
-                           (list 'quote (recompose-clause clause)))
+                           (clojure.core/list 'quote (recompose-clause clause)))
                          decomposed))))
 
 (defn process-in-ns [_ctx req]
   (let [quoted (keep-quoted (rest req))
         quoted (map (fn [ns]
-                      (list 'quote ns))
+                      (clojure.core/list 'quote ns))
                     quoted)]
     (when (clojure.core/seq quoted)
       (list* 'in-ns quoted))))
@@ -279,3 +279,6 @@
 
 (defmacro vec [& preds]
   `(clojure.spec.alpha/and vector? (cat ~@preds)))
+
+(defmacro list [& preds]
+  `(clojure.spec.alpha/and list? (cat ~@preds)))
