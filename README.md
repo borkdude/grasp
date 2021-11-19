@@ -23,7 +23,7 @@ The `grasp.api` namespace currently exposes:
   account aliases and refers. You can also use `rsym` to create a spec that
   matches a fully-qualified, resolved symbol.
 - `unwrap`: see [Finding keywords](#finding-keywords).
-- `cat`, `or`, `seq`, `vec`, `list`: see [Convenience macros](#convenience-macros).
+- `cat`, `or`, `seq`, `vec`: see [Convenience macros](#convenience-macros).
 - `*`, `?`, `+`: aliases for `(s/* any?)`, etc.
 
 ## Status
@@ -204,14 +204,14 @@ More examples in [examples](examples).
 
 ## Convenience macros
 
-Grasp exposes the `cat`, `seq`, `vec`, `list` and `or` convenience macros.
+Grasp exposes the `cat`, `seq`, `vec` and `or` convenience macros.
 
 All of these macros support passing in a single quoted value for matching a
 literal thing `'foo` for matching that symbol instead of
 `#{'foo}`. Additionally, they let you write specs without names for each parsed
-item: `(g/cat 'foo int?)` instead of `(s/cat :s #{'foo} :i int?)`. The `seq`,
-`vec`, and `list` macros are like the `cat` macro but additionally check for `seq?`,
-`vector?`, and `list` respectively.
+item: `(g/cat 'foo int?)` instead of `(s/cat :s #{'foo} :i int?)`. The `seq`
+and `vec` macros are like the `cat` macro but additionally check for `seq?` and
+`vector?` respectively.
 
 ## Binary
 
