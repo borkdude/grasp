@@ -4,3 +4,5 @@ pom.xml
 .lein-failures
 classes
 /grasp
+.lsp/.cache/
+.clj-kondo/.cache/

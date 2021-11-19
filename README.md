@@ -20,7 +20,8 @@ The `grasp.api` namespace currently exposes:
   `.cljc`.
 - `(grasp-string string spec)`: returns matched sexprs in string for spec.
 - `resolve-symbol`: returns the resolved symbol for a symbol, taking into
-  account aliases and refers.
+  account aliases and refers. You can also use `rsym` to create a spec that
+  matches a fully-qualified, resolved symbol.
 - `unwrap`: see [Finding keywords](#finding-keywords).
 - `cat`, `or`, `seq`, `vec`: see [Convenience macros](#convenience-macros).
 - `*`, `?`, `+`: aliases for `(s/* any?)`, etc.
@@ -94,9 +95,12 @@ Find all usages of `clojure.set/difference`:
 
 (->>
    (g/grasp "/Users/borkdude/git/clojure/src"
-                (fn [sym]
-                  (when (symbol? sym)
-                    (= 'clojure.set/difference (g/resolve-symbol sym)))))
+            ;; Alt 1: using rsym:
+            (g/rsym 'clojure.set/difference)
+            ;; Alt 2: do it manually:
+            #_(fn [sym]
+              (when (symbol? sym)
+                (= 'clojure.set/difference (g/resolve-symbol sym)))))
    (map table-row)
    pprint/print-table)
 ```
@@ -112,6 +116,15 @@ This outputs:
 |    file:/Users/borkdude/git/clojure/src/clj/clojure/data.clj |   112 |      19 | set/difference |
 |    file:/Users/borkdude/git/clojure/src/clj/clojure/data.clj |   113 |      19 | set/difference |
 | file:/Users/borkdude/git/clojure/src/clj/clojure/reflect.clj |   107 |      37 | set/difference |
+```
+
+### Find a function call
+
+Find all calls to `clojure.core/map` that take 1 argument:
+
+```clojure
+(g/grasp-string "(comment (map identity))" (g/seq (g/rsym 'clojure.core/map) any?))
+; => [(map identity)]
 ```
 
 ### Grasp a classpath
@@ -205,8 +218,8 @@ Grasp exposes the `cat`, `seq`, `vec` and `or` convenience macros.
 All of these macros support passing in a single quoted value for matching a
 literal thing `'foo` for matching that symbol instead of
 `#{'foo}`. Additionally, they let you write specs without names for each parsed
-item: `(g/cat 'foo int?)` instead of `(s/cat :s #{'foo} :i int?)`. The `seq` and
-`vec` macros are like the `cat` macro but additionally check for `seq?` and
+item: `(g/cat 'foo int?)` instead of `(s/cat :s #{'foo} :i int?)`. The `seq`
+and `vec` macros are like the `cat` macro but additionally check for `seq?` and
 `vector?` respectively.
 
 ## Binary

@@ -19,6 +19,12 @@
 (defn unwrap [wrapped]
   (impl/unwrap wrapped))
 
+(defn rsym 
+  "Spec for a symbol equal to the provided fully-qualified `sym`
+  so that you don't need to run it through [[resolve-symbol]]."
+  [sym]
+  (s/and symbol? (comp #{sym} grasp.api/resolve-symbol)))
+
 (def ^:macro cat @#'impl/cat)
 (def ^:macro or  @#'impl/or)
 (def ^:macro seq @#'impl/seq)

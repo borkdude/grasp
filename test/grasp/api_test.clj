@@ -36,6 +36,19 @@
                                     (= 'clojure.set/difference (g/resolve-symbol sym)))))
                   (map meta))))))
 
+(deftest rsym-test
+  (let [prog "
+(require '[clojure.set :as set :refer [difference]])
+(difference #{1 2 3} #{2 3 4})
+(set/difference #{1 2 3} #{2 3 4})
+(clojure.set/difference #{1 2 3} #{2 3 4})"]
+    (is (= [{:line 2, :column 40}
+            {:line 3, :column 2}
+            {:line 4, :column 2}
+            {:line 5, :column 2}]
+           (->> (grasp-string prog (g/rsym 'clojure.set/difference))
+                (map meta))))))
+
 (deftest classpath-test
   (->> (grasp (System/getProperty "java.class.path") #{'frequencies})
        (first)
