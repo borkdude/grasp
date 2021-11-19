@@ -96,7 +96,7 @@ Find all usages of `clojure.set/difference`:
 (->>
    (g/grasp "/Users/borkdude/git/clojure/src"
             ;; Alt 1: using rsym:
-            (rsym 'clojure.set/difference)
+            (g/rsym 'clojure.set/difference)
             ;; Alt 2: do it manually:
             #_(fn [sym]
               (when (symbol? sym)
@@ -116,6 +116,15 @@ This outputs:
 |    file:/Users/borkdude/git/clojure/src/clj/clojure/data.clj |   112 |      19 | set/difference |
 |    file:/Users/borkdude/git/clojure/src/clj/clojure/data.clj |   113 |      19 | set/difference |
 | file:/Users/borkdude/git/clojure/src/clj/clojure/reflect.clj |   107 |      37 | set/difference |
+```
+
+### Find a function call
+
+Find all calls to `clojure.core/map` that take 1 argument:
+
+```clojure
+(g/grasp-string "(comment (map identity))" (g/seq (g/rsym 'clojure.core/map) any?))
+; => [(map identity)]
 ```
 
 ### Grasp a classpath
