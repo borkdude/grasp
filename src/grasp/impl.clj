@@ -106,14 +106,14 @@
 (defrecord Wrapper [obj])
 
 (defn match-sexprs
-  [source-tree spec valid-fn url]
+  [source-tree spec keep-fn url]
   (->> source-tree
        (tree-seq #(and ;; (do (prn (meta %)) true)
                        (seqable? %)
                        (not (string? %))
                        (not (instance? Wrapper %)))
                  clojure.core/seq)
-       (filter #(valid-fn spec %))
+       (keep #(keep-fn spec %))
        (map #(with-url url %))))
 
 (defn log-error [_ctx url reader form cause]
@@ -205,7 +205,7 @@
                                 nexpr)
                               :else nexpr))
                       nexpr)
-                    matched (match-sexprs form spec (:valid-fn opts) url)]
+                    matched (match-sexprs form spec (:keep-fn opts) url)]
                 (recur (into matches matched))))))))))
 
 (defn sources-from-jar
