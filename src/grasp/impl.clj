@@ -247,7 +247,7 @@
                         (sources-from-jar file))
                 (= "-" path)
                 (grasp-string (slurp *in*) spec (assoc opts :url "stdin"))
-                :else ;; assume file
+                (.exists file) ;; assume file
                 (grasp-string (slurp file) spec (assoc opts :url (.toURL file)))))))
 
 (defn resolve-symbol [sym]
