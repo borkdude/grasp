@@ -4,7 +4,7 @@
             [clojure.spec.alpha :as s]
             [grasp.api :as grasp :refer [grasp]]))
 
-(s/def ::args+body (s/cat :arg-vec vector? :exprs (s/+ any?)))
+(s/def ::args+body (s/cat :arg-vec vector? :exprs (s/* any?)))
 (s/def ::fn-body (s/alt :single ::args+body :multi (s/+ (s/spec ::args+body))))
 (s/def ::defn (s/cat :defn #{'defn} :name symbol? :some-stuff (s/* any?) :fn-body ::fn-body))
 
