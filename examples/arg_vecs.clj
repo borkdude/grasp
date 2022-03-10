@@ -20,6 +20,14 @@
 
 (def matches (grasp (System/getProperty "java.class.path") ::defn-with-large-arg-vec))
 
+(defn keep-fn [spec expr]
+  (let [conformed (s/conform spec expr)]
+    (when-not (s/invalid? conformed)
+      (with-meta expr {:conformed conformed :var-name (grasp/resolve-symbol (second expr))}))))
+
+(def matches-with-resoved-name
+  (grasp (System/getProperty "java.class.path") ::defn-with-large-arg-vec {:keep-fn keep-fn}))
+
 (defn table-row [sexpr]
   (let [conformed (s/conform ::defn sexpr)
         m (meta sexpr)
