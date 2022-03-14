@@ -90,7 +90,7 @@ Find all usages of `clojure.set/difference`:
 ``` clojure
 (defn table-row [sexpr]
   (-> (meta sexpr)
-      (select-keys [:url :line :column])
+      (select-keys [:uri :line :column])
       (assoc :sexpr sexpr)))
 
 (->>
@@ -108,7 +108,7 @@ Find all usages of `clojure.set/difference`:
 This outputs:
 
 ``` clojure
-|                                                         :url | :line | :column |         :sexpr |
+|                                                         :uri | :line | :column |         :sexpr |
 |--------------------------------------------------------------+-------+---------+----------------|
 |     file:/Users/borkdude/git/clojure/src/clj/clojure/set.clj |    49 |       7 |     difference |
 |     file:/Users/borkdude/git/clojure/src/clj/clojure/set.clj |    62 |      14 |     difference |
@@ -132,16 +132,16 @@ Find all calls to `clojure.core/map` that take 1 argument:
 Grasp the entire classpath for usage of `frequencies`:
 
 ``` clojure
-(->> (grasp (System/getProperty "java.class.path") #{'frequencies})
+(->> (g/grasp (System/getProperty "java.class.path") #{'frequencies})
      (take 2)
-     (map (comp #(select-keys % [:url :line]) meta)))
+     (map (comp #(select-keys % [:uri :line]) meta)))
 ```
 
 Output:
 
 ``` clojure
-({:url "file:/Users/borkdude/.gitlibs/libs/borkdude/sci/cb96d7fb2a37a7c21c78fc145948d6867c30936a/src/sci/impl/namespaces.cljc", :line 815}
- {:url "file:/Users/borkdude/.gitlibs/libs/borkdude/sci/cb96d7fb2a37a7c21c78fc145948d6867c30936a/src/sci/impl/namespaces.cljc", :line 815})
+({:uri "file:/Users/borkdude/.gitlibs/libs/borkdude/sci/cb96d7fb2a37a7c21c78fc145948d6867c30936a/src/sci/impl/namespaces.cljc", :line 815}
+ {:uri "file:/Users/borkdude/.gitlibs/libs/borkdude/sci/cb96d7fb2a37a7c21c78fc145948d6867c30936a/src/sci/impl/namespaces.cljc", :line 815})
 ```
 
 ### Finding keywords
@@ -180,9 +180,38 @@ keywords.
 The output:
 
 ``` clojure
-{:line 5, :column 13, :end-line 5, :end-column 27, :url "file:/tmp/code.clj"}
-{:line 6, :column 13, :end-line 6, :end-column 38, :url "file:/tmp/code.clj"}
+{:line 5, :column 13, :end-line 5, :end-column 27, :uri "file:/tmp/code.clj"}
+{:line 6, :column 13, :end-line 6, :end-column 38, :uri "file:/tmp/code.clj"}
 ```
+
+### Keep-fn
+
+Grasp supports a custom `:keep-fn`, the function which decides whether to
+collect a matched result. The default `:keep-fn` is:
+
+
+``` clojure
+(defn default-keep-fn
+  [{:keys [spec expr uri]}]
+  (when (s/valid? spec expr)
+    (impl/with-uri expr uri)))
+```
+
+When a spec result is valid, then the URI is attached to the result's metadata and kept.
+
+In a custom `:keep-fn` you are able to call `s/conform` and keep that result around:
+
+``` clojure
+(defn keep-fn [{:keys [spec expr uri]}]
+  (let [conformed (s/conform spec expr)]
+    (when-not (s/invalid? conformed)
+      {:var-name (grasp/resolve-symbol (second expr))
+       :expr expr
+       :uri uri})))
+```
+
+Now the result of `g/grasp` will be a seq of maps instead of expressions and you
+can do whatever you want with it.
 
 ### Matching on source string
 
@@ -289,7 +318,7 @@ Full example:
 ``` clojure
 $ grasp - fn_literal.clj <<< "#(foo %1 %2)"
 
-|  :url | :line |      :source |                    :match |
+|  :uri | :line |      :source |                    :match |
 |-------+-------+--------------+---------------------------|
 | stdin |     1 | #(foo %1 %2) | (fn* [%1 %2] (foo %1 %2)) |
 ```

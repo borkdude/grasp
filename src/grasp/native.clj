@@ -56,15 +56,24 @@
 (def ? (s/? any?))
 (def + (s/+ any?))
 
+(defn default-keep-fn
+  [{:keys [spec expr uri]}]
+  (when (s/valid? spec expr)
+    (impl/with-uri expr uri)))
+
 (defn grasp
   ([path-or-paths spec] (grasp path-or-paths spec nil))
-  ([path-or-paths spec opts]
-   (impl/grasp path-or-paths spec (assoc opts :valid-fn s/valid?))))
+  ([path-or-paths spec {:keys [keep-fn]
+                        :or {keep-fn default-keep-fn}
+                        :as opts}]
+   (impl/grasp path-or-paths spec (assoc opts :keep-fn keep-fn))))
 
 (defn grasp-string
   ([string spec] (grasp-string string spec nil))
-  ([string spec opts]
-   (impl/grasp-string string spec (assoc opts :valid-fn s/valid?))))
+  ([string spec {:keys [keep-fn]
+                 :or {keep-fn default-keep-fn}
+                 :as opts}]
+   (impl/grasp-string string spec (assoc opts :keep-fn keep-fn))))
 
 (defn rsym
   "Spec for a symbol equal to the provided fully-qualified `sym`
