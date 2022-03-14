@@ -69,6 +69,18 @@
                                     (identical? :my.cljs.app.subs/my-data (unwrap x)))
                                   {:wrap true})))))
 
+(deftest keep-fn-test
+  (is  (= '({:line 2, :column 1, :var-name my.pretty.app/foo})
+          (map meta (g/grasp-string
+                     "(ns my.pretty.app)
+(defn foo [] :bar)"
+                     (fn [x]
+                       (and (seq? x) (= 'defn (first x))))
+                     {:keep-fn (fn [spec expr]
+                                 (let [conformed (s/conform spec expr)]
+                                   (when-not (s/invalid? conformed)
+                                     (vary-meta expr assoc :var-name (grasp.api/resolve-symbol (second expr))))))})))))
+
 (deftest nil-test
   (is  (= '({:line 1, :column 1})
           (map meta (grasp-string "(merge nil)"
