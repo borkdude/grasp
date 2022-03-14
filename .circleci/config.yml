@@ -147,7 +147,7 @@ jobs:
           destination: release
   deploy:
     docker:
-      - image: cimg/clojure:openjdk-11-lein-2.9.8-bullseye
+      - image: cimg/clojure:1.10.3
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"

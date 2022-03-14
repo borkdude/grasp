@@ -9,6 +9,14 @@ tool for [sci](https://github.com/borkdude/sci/issues/485),
 [clj-kondo](https://github.com/borkdude/clj-kondo) or Clojure
 [tickets](https://clojure.atlassian.net/browse/CLJ-1656).
 
+## Dependency
+
+### deps.edn
+
+``` clojure
+io.github.borkdude/grasp {:mvn/version "0.0.2"}
+```
+
 ## API
 
 The `grasp.api` namespace currently exposes:
@@ -253,10 +261,7 @@ and `vec` macros are like the `cat` macro but additionally check for `seq?` and
 
 ## Binary
 
-A CLI binary can be obtained from the builds. Linux and macOS users should go to
-[CircleCI](https://app.circleci.com/pipelines/github/borkdude/grasp?branch=master)
-and Windows users should go to
-[Appveyor](https://ci.appveyor.com/project/borkdude/grasp).
+A CLI binary can be obtained from Github releases.
 
 It can be invoked like this:
 
