@@ -6,12 +6,14 @@
 (defn grasp
   ([path-or-paths spec] (grasp path-or-paths spec nil))
   ([path-or-paths spec opts]
-   (impl/grasp path-or-paths spec (merge {:keep-fn #(when (s/valid? %1 %2) %2)} opts))))
+   (impl/grasp path-or-paths spec (merge {:keep-fn (fn [{:keys [spec expr]}]
+                                                     (when (s/valid? spec expr) expr))} opts))))
 
 (defn grasp-string
   ([string spec] (grasp-string string spec nil))
   ([string spec opts]
-   (impl/grasp-string string spec (merge {:keep-fn #(when (s/valid? %1 %2) %2)} opts))))
+   (impl/grasp-string string spec (merge {:keep-fn (fn [{:keys [spec expr]}]
+                                                     (when (s/valid? spec expr) expr))} opts))))
 
 (defn resolve-symbol [sym]
   (impl/resolve-symbol sym))

@@ -18,20 +18,18 @@
                   (let [avs (arg-vecs (:fn-body m))]
                     (some #(> (count %) 7) avs)))))
 
-(def matches (grasp (System/getProperty "java.class.path") ::defn-with-large-arg-vec))
-
-(defn keep-fn [spec expr]
+(defn keep-fn [{:keys [spec expr]}]
   (let [conformed (s/conform spec expr)]
     (when-not (s/invalid? conformed)
-      (with-meta expr {:conformed conformed :var-name (grasp/resolve-symbol (second expr))}))))
+      {:var-name (grasp/resolve-symbol (second expr))
+       :expr expr})))
 
-(def matches-with-resoved-name
+(def matches
   (grasp (System/getProperty "java.class.path") ::defn-with-large-arg-vec {:keep-fn keep-fn}))
 
-(defn table-row [sexpr]
-  (let [conformed (s/conform ::defn sexpr)
-        m (meta sexpr)
+(defn table-row [{:keys [var-name expr]}]
+  (let [m (meta expr)
         m (select-keys m [:file :line :column])]
-    (assoc m :name (:name conformed))))
+    (assoc m :name var-name)))
 
 (pprint/print-table (map table-row matches))

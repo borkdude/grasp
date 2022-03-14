@@ -14,11 +14,13 @@
          :clauses (s/cat :clause ::clause :clauses (s/+ ::clause))))
 
 (deftest reify-test
-  (let [matches (g/grasp-string clojure-core ::reify)
-        locs (map meta matches)
-        lines (map :line locs)]
-    (is (= 2 (count lines)))
-    (is (every? pos? lines))))
+  (time
+   (dotimes [_ 10]
+     (let [matches (g/grasp-string clojure-core ::reify)
+           locs (map meta matches)
+           lines (map :line locs)]
+       (is (= 3 (count lines)))
+       (is (every? pos? lines))))))
 
 (deftest resolve-test
   (let [prog "
@@ -30,11 +32,11 @@
             {:line 3, :column 2}
             {:line 4, :column 2}
             {:line 5, :column 2}]
-             (->> (grasp-string prog
-                                (fn [sym]
-                                  (when (symbol? sym)
-                                    (= 'clojure.set/difference (g/resolve-symbol sym)))))
-                  (map meta))))))
+           (->> (grasp-string prog
+                              (fn [sym]
+                                (when (symbol? sym)
+                                  (= 'clojure.set/difference (g/resolve-symbol sym)))))
+                (map meta))))))
 
 (deftest rsym-test
   (let [prog "
@@ -76,7 +78,7 @@
 (defn foo [] :bar)"
                      (fn [x]
                        (and (seq? x) (= 'defn (first x))))
-                     {:keep-fn (fn [spec expr]
+                     {:keep-fn (fn [{:keys [spec expr]}]
                                  (let [conformed (s/conform spec expr)]
                                    (when-not (s/invalid? conformed)
                                      (vary-meta expr assoc :var-name (grasp.api/resolve-symbol (second expr))))))})))))

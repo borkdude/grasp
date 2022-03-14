@@ -113,7 +113,7 @@
                        (not (string? %))
                        (not (instance? Wrapper %)))
                  clojure.core/seq)
-       (keep #(keep-fn spec %))
+       (keep #(keep-fn {:spec spec :expr %}))
        (map #(with-url url %))))
 
 (defn log-error [_ctx url reader form cause]
