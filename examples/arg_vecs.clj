@@ -18,11 +18,12 @@
                   (let [avs (arg-vecs (:fn-body m))]
                     (some #(> (count %) 7) avs)))))
 
-(defn keep-fn [{:keys [spec expr]}]
+(defn keep-fn [{:keys [spec expr uri]}]
   (let [conformed (s/conform spec expr)]
     (when-not (s/invalid? conformed)
       {:var-name (grasp/resolve-symbol (second expr))
-       :expr expr})))
+       :expr expr
+       :uri uri})))
 
 (def matches
   (grasp (System/getProperty "java.class.path") ::defn-with-large-arg-vec {:keep-fn keep-fn}))

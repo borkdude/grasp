@@ -98,23 +98,22 @@
 
 (def ^:dynamic *ctx* nil)
 
-(defn with-url [url sexpr]
-  (if (and url (instance? clojure.lang.IObj sexpr))
-    (vary-meta sexpr assoc :url (str url))
-    sexpr))
+(defn with-uri [x uri]
+  (if (and uri (instance? clojure.lang.IObj x))
+    (vary-meta x assoc :uri (str uri))
+    x))
 
 (defrecord Wrapper [obj])
 
 (defn match-sexprs
-  [source-tree spec keep-fn url]
+  [source-tree spec keep-fn uri]
   (->> source-tree
        (tree-seq #(and ;; (do (prn (meta %)) true)
                        (seqable? %)
                        (not (string? %))
                        (not (instance? Wrapper %)))
                  clojure.core/seq)
-       (keep #(keep-fn {:spec spec :expr %}))
-       (map #(with-url url %))))
+       (keep #(keep-fn {:spec spec :expr % :uri uri}))))
 
 (defn log-error [_ctx url reader form cause]
   (binding [*out* *err*]
@@ -221,7 +220,7 @@
         ;; transducers so we don't have to load the entire source of a jar file in
         ;; memory at once?
         (mapv (fn [^java.util.jar.JarFile$JarFileEntry entry]
-                {:url (java.net.URL. (str "jar:file:" (.getPath jar-file) "!/" (.getName entry)))
+                {:uri (java.net.URI. (str "jar:file:" (.getPath jar-file) "!/" (.getName entry)))
                  :source (slurp (.getInputStream jar entry))}) entries)))
     (catch java.util.zip.ZipException _e
       ;; skip invalid jar files
@@ -248,7 +247,7 @@
                 (= "-" path)
                 (grasp-string (slurp *in*) spec (assoc opts :url "stdin"))
                 (.exists file) ;; assume file
-                (grasp-string (slurp file) spec (assoc opts :url (.toURL file)))))))
+                (grasp-string (slurp file) spec (assoc opts :url (.toURI file)))))))
 
 (defn resolve-symbol [sym]
   (p/fully-qualify *ctx* sym))

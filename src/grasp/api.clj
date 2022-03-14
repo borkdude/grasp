@@ -3,17 +3,24 @@
   (:require [clojure.spec.alpha :as s]
             [grasp.impl :as impl]))
 
+(defn default-keep-fn
+  [{:keys [spec expr uri]}]
+  (when (s/valid? spec expr)
+    (impl/with-uri expr uri)))
+
 (defn grasp
   ([path-or-paths spec] (grasp path-or-paths spec nil))
-  ([path-or-paths spec opts]
-   (impl/grasp path-or-paths spec (merge {:keep-fn (fn [{:keys [spec expr]}]
-                                                     (when (s/valid? spec expr) expr))} opts))))
+  ([path-or-paths spec {:keys [keep-fn]
+                        :or {keep-fn default-keep-fn}
+                        :as opts}]
+   (impl/grasp path-or-paths spec (assoc opts :keep-fn keep-fn))))
 
 (defn grasp-string
   ([string spec] (grasp-string string spec nil))
-  ([string spec opts]
-   (impl/grasp-string string spec (merge {:keep-fn (fn [{:keys [spec expr]}]
-                                                     (when (s/valid? spec expr) expr))} opts))))
+  ([string spec {:keys [keep-fn]
+                 :or {keep-fn default-keep-fn}
+                 :as opts}]
+   (impl/grasp-string string spec (assoc opts :keep-fn keep-fn))))
 
 (defn resolve-symbol [sym]
   (impl/resolve-symbol sym))
