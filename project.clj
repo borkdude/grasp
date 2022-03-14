@@ -1,4 +1,4 @@
-(defproject io.github.borkdude/grasp "0.0.1"
+(defproject io.github.borkdude/grasp "0.0.2"
   :description "Grep Clojure code using clojure.spec regexes."
   :url "https://github.com/borkdude/grasp"
   :scm {:name "git"
