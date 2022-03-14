@@ -1,5 +1,4 @@
-{:deps {borkdude/sci{:git/url "https://github.com/borkdude/sci"
-                     :sha "ce42263910c3f9dbc5ec67b245d8d39e9a9e8f71"}}
+{:deps {org.babashka/sci {:mvn/version "0.3.2"}}
  :aliases {:native {:jvm-opts ["-Dclojure.compiler.direct-linking=true"]
                     :extra-deps {org.clojure/clojure {:mvn/version "1.10.2-alpha3"}
                                  org.clojure/tools.cli {:mvn/version "1.0.194"}}}
