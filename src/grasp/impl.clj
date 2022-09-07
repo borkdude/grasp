@@ -115,13 +115,13 @@
                  clojure.core/seq)
        (keep #(keep-fn {:spec spec :expr % :uri uri}))))
 
-(defn log-error [_ctx url reader form cause]
+(defn log-error [_ctx uri reader form cause]
   (binding [*out* *err*]
     (prn
      {:type :error
       :line (sci/get-line-number reader)
       :column (sci/get-column-number reader)
-      :url url
+      :uri uri
       :form form
       :cause (when cause (.getMessage ^Throwable cause))})))
 
@@ -157,7 +157,7 @@
       ;; matches to ensure *ctx* is still bound
       (sci/with-bindings {sci/ns @sci/ns}
         (loop [matches []]
-          (let [url (:url opts)
+          (let [uri (:uri opts)
                 nexpr (try (sci/parse-next ctx reader
                                            (cond-> {:location? (fn [_] true)}
                                              (:wrap opts)
@@ -186,25 +186,25 @@
                                     ns-form (process-ns ctx ns-form)]
                                 (try (sci/eval-form ctx ns-form)
                                      (catch Exception e
-                                       (log-error ctx url reader ns-form e)))
+                                       (log-error ctx uri reader ns-form e)))
                                 nexpr)
                               (= 'require fexpr)
                               (let [req-form (unwrap-all nexpr)
                                     req-form (process-require ctx req-form)]
                                 (try (sci/eval-form ctx req-form)
                                      (catch Exception e
-                                       (log-error url ctx reader nexpr e)))
+                                       (log-error uri ctx reader nexpr e)))
                                 nexpr)
                               (= 'in-ns fexpr)
                               (let [form (unwrap-all nexpr)
                                     form (process-in-ns ctx form)]
                                 (try (sci/eval-form ctx form)
                                      (catch Exception e
-                                       (log-error url ctx reader nexpr e)))
+                                       (log-error uri ctx reader nexpr e)))
                                 nexpr)
                               :else nexpr))
                       nexpr)
-                    matched (match-sexprs form spec (:keep-fn opts) url)]
+                    matched (match-sexprs form spec (:keep-fn opts) uri)]
                 (recur (into matches matched))))))))))
 
 (defn sources-from-jar
@@ -242,12 +242,12 @@
                 (mapcat #(grasp % spec opts)
                         (filter source-file? (file-seq file)))
                 (str/ends-with? path ".jar")
-                (mapcat #(grasp-string (:source %) spec (assoc opts :url (:url %)))
+                (mapcat #(grasp-string (:source %) spec (assoc opts :uri (:uri %)))
                         (sources-from-jar file))
                 (= "-" path)
-                (grasp-string (slurp *in*) spec (assoc opts :url "stdin"))
+                (grasp-string (slurp *in*) spec (assoc opts :uri "stdin"))
                 (.exists file) ;; assume file
-                (grasp-string (slurp file) spec (assoc opts :url (.toURI file)))))))
+                (grasp-string (slurp file) spec (assoc opts :uri (.toURI file)))))))
 
 (defn resolve-symbol [sym]
   (p/fully-qualify *ctx* sym))
