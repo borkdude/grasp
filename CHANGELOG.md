@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.4
+
+- Fix `:uri` in several places
+
 ## 0.0.3
 
 - Fix: include SCI dependency in deployed artifact
