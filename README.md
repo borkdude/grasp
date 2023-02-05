@@ -14,7 +14,7 @@ tool for [sci](https://github.com/borkdude/sci/issues/485),
 ### deps.edn
 
 ``` clojure
-io.github.borkdude/grasp {:mvn/version "0.0.3"}
+io.github.borkdude/grasp {:mvn/version "0.1.4"}
 ```
 
 ## API
