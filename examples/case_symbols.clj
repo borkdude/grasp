@@ -6,15 +6,20 @@
 
 (s/def ::case (s/cat :case #{'case} :test any? :body (s/* any?)))
 
-(defn case-body-with-symbols [expr case-body]
-  (when (seq (filter symbol? (take-nth 2 case-body)))
-    (meta expr) #_(assoc (meta expr) :expr expr)))
+(defn case-body-with-symbols [case-body]
+  (let [body-count (count case-body)
+        body (if (even? body-count)
+               case-body
+               ;; skip default case
+               (butlast case-body))]
+    (when (seq (filter symbol? (take-nth 2 body)))
+      case-body)))
 
 (defn keep-fn [{:keys [spec expr uri]}]
   (let [conformed (s/conform spec expr)]
     (when-not (s/invalid? conformed)
-      (some-> (case-body-with-symbols expr (:body conformed))
-              (assoc :uri uri)))))
+      (when (case-body-with-symbols (:body conformed))
+        (assoc (meta expr) :uri uri)))))
 
 (def matches
   (grasp (System/getProperty "java.class.path") ::case {:keep-fn keep-fn}))
