@@ -1,5 +1,9 @@
 # Changelog
 
+## Next
+
+- Fix circular reference in grasp.impl
+
 ## 0.1.4
 
 - Fix `:uri` in several places

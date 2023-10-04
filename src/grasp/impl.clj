@@ -5,7 +5,6 @@
             [clojure.string :as str]
             [clojure.walk :refer [postwalk]]
             [edamame.core :as e]
-            [grasp.impl :as impl]
             [sci.core :as sci]
             [sci.impl.parser :as p]))
 
