@@ -62,7 +62,7 @@ jobs:
           command: |
             echo 'hello'
             cd ~
-            ls -la
+            echo $PWD
             echo 'dude'
             ls -la
             if ! [ -d graalvm-ce-java11-22.0.0.2 ]; then
