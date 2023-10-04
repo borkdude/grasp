@@ -62,6 +62,7 @@ jobs:
           command: |
             echo 'hello'
             cd ~
+            echo 'dude'
             if ! [ -d graalvm-ce-java11-22.0.0.2 ]; then
               curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.0.0.2/graalvm-ce-java11-linux-amd64-22.0.0.2.tar.gz
               tar xzf graalvm-ce-java11-linux-amd64-22.0.0.2.tar.gz
