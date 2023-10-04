@@ -60,17 +60,10 @@ jobs:
       - run:
           name: Download GraalVM
           command: |
-            echo 'hello'
             cd ~
-            echo $PWD
-            echo 'dude'
-            ls -la
             if ! [ -d graalvm-ce-java11-22.3.3 ]; then
               curl -O -L https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.3.3/graalvm-ce-java11-linux-amd64-22.3.3.tar.gz
-              ls -la
-              tar vxzf graalvm-ce-java11-linux-amd64-22.3.3.tar.gz
-            else
-              echo 'dir exists'
+              tar xzf graalvm-ce-java11-linux-amd64-22.3.3.tar.gz
             fi
       - run:
           name: Build binary
@@ -122,7 +115,6 @@ jobs:
           name: Download GraalVM
           command: |
             cd ~
-            ls -la
             if ! [ -d graalvm-ce-java11-22.3.3 ]; then
               curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.3.3/graalvm-ce-java11-darwin-amd64-22.3.3.tar.gz
               tar xzf graalvm-ce-java11-darwin-amd64-22.3.3.tar.gz
