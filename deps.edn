@@ -1,10 +1,10 @@
-{:deps {org.babashka/sci {:mvn/version "0.3.2"}}
+{:deps {org.babashka/sci {:mvn/version "0.12.51"}}
  :aliases {:native {:jvm-opts ["-Dclojure.compiler.direct-linking=true"]
-                    :extra-deps {org.clojure/clojure {:mvn/version "1.10.2-alpha3"}
-                                 org.clojure/tools.cli {:mvn/version "1.0.194"}}}
+                    :extra-deps {org.clojure/clojure {:mvn/version "1.12.4"}
+                                 org.clojure/tools.cli {:mvn/version "1.1.230"}}}
            :test {:extra-paths ["test"]
-                  :extra-deps {org.clojure/clojure {:mvn/version "1.11.0-rc1"}
+                  :extra-deps {org.clojure/clojure {:mvn/version "1.12.4"}
                                cognitect-labs/test-runner
                                {:git/url "https://github.com/cognitect-labs/test-runner"
-                                :sha "cb96e80f6f3d3b307c59cbeb49bb0dcb3a2a780b"}}
+                                :sha "3f288f1f16d167723ad87cc35b1dfee3c1681e10"}}
                   :main-opts ["-m" "cognitect.test-runner"]}}}

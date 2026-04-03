@@ -1,9 +1,13 @@
 # Changelog
 
-## Next
+## 0.2.5
 
+- Bump SCI to 0.12.51
+- Bump Clojure to 1.12.4
+- Upgrade CI to GraalVM 25
+- Move Windows CI from Appveyor to GitHub Actions
 - Fix circular reference in grasp.impl
-- Fix bug in native which dropped all match results
+- Fix bug in native which dropped all match results ([@bsless](https://github.com/bsless))
 
 ## 0.1.4
 

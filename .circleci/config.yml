@@ -7,7 +7,7 @@ jobs:
   jvm:
     docker:
       # specify the version you desire here
-      - image: cimg/clojure:1.10.3
+      - image: cimg/clojure:1.12.4
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
@@ -21,9 +21,9 @@ jobs:
       - run:
           name: Install Clojure
           command: |
-            wget -nc https://download.clojure.org/install/linux-install-1.10.3.1087.sh
-            chmod +x linux-install-1.10.3.1087.sh
-            sudo ./linux-install-1.10.3.1087.sh
+            curl -L -O https://github.com/clojure/brew-install/releases/latest/download/posix-install.sh
+            chmod +x posix-install.sh
+            sudo ./posix-install.sh
       - run:
           name: Run JVM tests
           command: |
@@ -34,7 +34,7 @@ jobs:
           key: v1-dependencies-{{ checksum "deps.edn" }}
   linux:
     docker:
-      - image: cimg/clojure:1.10.3
+      - image: cimg/clojure:1.12.4
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
@@ -49,9 +49,9 @@ jobs:
       - run:
           name: Install Clojure
           command: |
-            wget https://download.clojure.org/install/linux-install-1.10.3.1087.sh
-            chmod +x linux-install-1.10.3.1087.sh
-            sudo ./linux-install-1.10.3.1087.sh
+            curl -L -O https://github.com/clojure/brew-install/releases/latest/download/posix-install.sh
+            chmod +x posix-install.sh
+            sudo ./posix-install.sh
       - run:
           name: Install native dev tools
           command: |
@@ -150,7 +150,7 @@ jobs:
           destination: release
   deploy:
     docker:
-      - image: cimg/clojure:1.10.3
+      - image: cimg/clojure:1.12.4
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"

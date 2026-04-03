@@ -1,4 +1,4 @@
-(defproject io.github.borkdude/grasp "0.1.4"
+(defproject io.github.borkdude/grasp "0.2.5"
   :description "Grep Clojure code using clojure.spec regexes."
   :url "https://github.com/borkdude/grasp"
   :scm {:name "git"
@@ -6,8 +6,8 @@
   :license {:name "Eclipse Public License 1.0"
             :url "http://opensource.org/licenses/eclipse-1.0.php"}
   :source-paths ["src"]
-  :dependencies [[org.clojure/clojure "1.11.0-rc1"]
-                 [org.babashka/sci "0.3.2"]]
+  :dependencies [[org.clojure/clojure "1.12.4"]
+                 [org.babashka/sci "0.12.51"]]
   :plugins [[lein-codox "0.10.7"]
             [lein-cloverage "1.2.2"]]
   :codox {:output-path "gh-pages"}
