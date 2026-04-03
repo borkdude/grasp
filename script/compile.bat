@@ -19,11 +19,9 @@ echo Please set GRAALVM_HOME
 exit /b
 )
 
-set PATH=%USERPROFILE%\deps.clj;%PATH%
-
 if not exist "classes" mkdir classes
-call deps -M:native -e "(compile 'grasp.native)"
-deps -Spath -A:native > .classpath
+call clojure -M:native -e "(compile 'grasp.native)"
+clojure -Spath -A:native > .classpath
 set /P NATIVE_CLASSPATH=<.classpath
 
 if exist "%GRAALVM_HOME%\bin\gu.cmd" (
