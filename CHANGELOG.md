@@ -3,6 +3,7 @@
 ## Next
 
 - Fix circular reference in grasp.impl
+- Fix bug in native which dropped all match results
 
 ## 0.1.4
 
