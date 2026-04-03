@@ -7,8 +7,9 @@ if [ -z "$GRAALVM_HOME" ]; then
     exit 1
 fi
 
-echo "gu installing"
-"$GRAALVM_HOME/bin/gu" install native-image || true
+if [ -f "$GRAALVM_HOME/bin/gu" ]; then
+    "$GRAALVM_HOME/bin/gu" install native-image || true
+fi
 
 rm -rf classes && mkdir -p classes
 clojure -M:native \

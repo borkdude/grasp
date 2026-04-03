@@ -26,7 +26,9 @@ call deps -M:native -e "(compile 'grasp.native)"
 deps -Spath -A:native > .classpath
 set /P NATIVE_CLASSPATH=<.classpath
 
-call %GRAALVM_HOME%\bin\gu.cmd install native-image
+if exist "%GRAALVM_HOME%\bin\gu.cmd" (
+  call %GRAALVM_HOME%\bin\gu.cmd install native-image
+)
 
 call %GRAALVM_HOME%\bin\native-image.cmd ^
   "-cp" "classes;%NATIVE_CLASSPATH%" ^
