@@ -7,7 +7,7 @@ jobs:
   jvm:
     docker:
       # specify the version you desire here
-      - image: cimg/clojure:1.12.4
+      - image: cimg/clojure:1.11.4
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
@@ -34,7 +34,7 @@ jobs:
           key: v1-dependencies-{{ checksum "deps.edn" }}
   linux:
     docker:
-      - image: cimg/clojure:1.12.4
+      - image: cimg/clojure:1.11.4
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
@@ -150,7 +150,7 @@ jobs:
           destination: release
   deploy:
     docker:
-      - image: cimg/clojure:1.12.4
+      - image: cimg/clojure:1.11.4
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
