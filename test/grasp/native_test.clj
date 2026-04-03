@@ -13,7 +13,7 @@
         (sut/-main "src/grasp/native.clj" "-e" "#{'defn}"))
       (let [lines (partition-all 3 (str/split-lines (str baos)))
             lines (for [[fp found _] lines]
-                    [(last (str/split fp (re-pattern (java.util.regex.Pattern/quote (System/getProperty "file.separator")))))
+                    [(last (str/split fp #"/"))
                      found])]
         (is (= [["native.clj:52:2" "(defn set-opts! [m]"]
                 ["native.clj:59:2" "(defn default-keep-fn"]
@@ -30,7 +30,7 @@
         (sut/-main "-p" "src/grasp/native.clj" "-e" "#{'defn}"))
       (let [lines (partition-all 3 (str/split-lines (str baos)))
             lines (for [[fp found _] lines]
-                    [(last (str/split fp (re-pattern (java.util.regex.Pattern/quote (System/getProperty "file.separator")))))
+                    [(last (str/split fp #"/"))
                      found])]
         (is (= [["native.clj:52:2" "(defn set-opts! [m]"]
                 ["native.clj:59:2" "(defn default-keep-fn"]
