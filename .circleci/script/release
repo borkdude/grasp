@@ -9,7 +9,7 @@ cd /tmp/release
 
 ## release binary as zip archive
 
-zip "grasp-$VERSION-$APP_PLATFORM-amd64.zip" grasp
+zip "grasp-$VERSION-$APP_PLATFORM-${APP_ARCH:-amd64}.zip" grasp
 
 ## cleanup
 
