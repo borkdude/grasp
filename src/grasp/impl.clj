@@ -219,7 +219,7 @@
         ;; transducers so we don't have to load the entire source of a jar file in
         ;; memory at once?
         (mapv (fn [^java.util.jar.JarFile$JarFileEntry entry]
-                {:uri (java.net.URI. (str "jar:file:" (.getPath jar-file) "!/" (.getName entry)))
+                {:uri (java.net.URI. (str "jar:" (.toURI (java.io.File. (.getPath jar-file))) "!/" (.getName entry)))
                  :source (slurp (.getInputStream jar entry))}) entries)))
     (catch java.util.zip.ZipException _e
       ;; skip invalid jar files
