@@ -147,12 +147,12 @@
                            (grasp-string stdin spec opts)
                            (grasp path spec opts)))
                matches (map (fn [m] (assoc (meta m) :sexpr m)) matches)
-               batches (partition-by :url matches)]
+               batches (partition-by :uri matches)]
            (doseq [batch batches
-                   :let [url (:url (first batch))
+                   :let [uri (:uri (first batch))
                          lines (if from-stdin?
                                  (-> stdin str/split-lines)
-                                 (some-> url slurp
+                                 (some-> uri slurp
                                          str/split-lines))]
                    m batch]
              (let [{:keys [:line :end-line :column :_sexpr]} m]
@@ -161,7 +161,7 @@
                        ;;conformed (s/conform spec sexpr)
                        snippet (str/join "\n" snippet)]
                    (println (str (if from-stdin? "stdin"
-                                     url) ":"
+                                     uri) ":"
                                  line ":" column "\n" snippet))
                    ;; (prn conformed)
                    (println))))))
