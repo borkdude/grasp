@@ -1,0 +1,60 @@
+name: windows build
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GRAALVM_VERSION: "25"
+
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+
+      - name: Cache deps
+        uses: actions/cache@v4
+        id: cache-deps
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('deps.edn') }}
+          restore-keys: ${{ runner.os }}-maven-
+
+      - name: Setup GraalVM
+        uses: graalvm/setup-graalvm@v1.4.4
+        with:
+          java-version: '25'
+          distribution: 'graalvm'
+          components: 'native-image'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install clojure tools
+        uses: DeLaGuardo/setup-clojure@13.4
+        with:
+          cli: latest
+
+      - name: Build binary
+        shell: cmd
+        run: |
+          call script/compile.bat
+
+      - name: Test binary
+        shell: cmd
+        run: |
+          call script/test.bat
+
+      - name: Upload artifacts
+        shell: cmd
+        run: |
+          set /P GRASP_VERSION=< resources\GRASP_VERSION
+          set zip=grasp-%GRASP_VERSION%-windows-amd64.zip
+          jar -cMf %zip% grasp.exe
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: grasp-windows-amd64
+          path: grasp-*-windows-amd64.zip

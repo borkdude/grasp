@@ -38,7 +38,7 @@ jobs:
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
-      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-22.3.3
+      GRAALVM_HOME: /home/circleci/graalvm-25
       APP_PLATFORM: linux # used in release script
       APP_TEST_ENV: native
     steps:
@@ -61,9 +61,10 @@ jobs:
           name: Download GraalVM
           command: |
             cd ~
-            if ! [ -d graalvm-ce-java11-22.3.3 ]; then
-              curl -O -L https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.3.3/graalvm-ce-java11-linux-amd64-22.3.3.tar.gz
-              tar xzf graalvm-ce-java11-linux-amd64-22.3.3.tar.gz
+            if ! [ -d graalvm-25 ]; then
+              curl --fail -LO https://download.oracle.com/graalvm/25/archive/graalvm-jdk-25_linux-x64_bin.tar.gz
+              mkdir graalvm-25
+              tar xzf graalvm-jdk-25_linux-x64_bin.tar.gz -C graalvm-25 --strip-components 1
             fi
       - run:
           name: Build binary
@@ -85,17 +86,19 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-            - ~/graalvm-ce-java11-22.3.3
+            - ~/graalvm-25
           key: linux-{{ checksum "deps.edn" }}-{{ checksum ".circleci/config.yml" }}
       - store_artifacts:
           path: /tmp/release
           destination: release
   mac:
     macos:
-      xcode: "14.0.0"
+      xcode: "14.3.1"
+      resource_class: m4pro.medium
     environment:
-      GRAALVM_HOME: /Users/distiller/graalvm-ce-java11-22.3.3/Contents/Home
+      GRAALVM_HOME: /Users/distiller/graalvm-25/Contents/Home
       APP_PLATFORM: macos # used in release script
+      APP_ARCH: aarch64
       APP_TEST_ENV: native
     steps:
       - checkout
@@ -115,9 +118,10 @@ jobs:
           name: Download GraalVM
           command: |
             cd ~
-            if ! [ -d graalvm-ce-java11-22.3.3 ]; then
-              curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.3.3/graalvm-ce-java11-darwin-amd64-22.3.3.tar.gz
-              tar xzf graalvm-ce-java11-darwin-amd64-22.3.3.tar.gz
+            if ! [ -d graalvm-25 ]; then
+              curl --fail -LO https://download.oracle.com/graalvm/25/archive/graalvm-jdk-25_macos-aarch64_bin.tar.gz
+              mkdir graalvm-25
+              tar xzf graalvm-jdk-25_macos-aarch64_bin.tar.gz -C graalvm-25 --strip-components 1
             fi
       - run:
           name: Build binary
@@ -139,7 +143,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-            - ~/graalvm-ce-java11-22.3.3
+            - ~/graalvm-25
           key: mac-{{ checksum "deps.edn" }}-{{ checksum ".circleci/config.yml" }}
       - store_artifacts:
           path: /tmp/release
