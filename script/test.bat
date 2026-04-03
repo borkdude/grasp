@@ -1,2 +1,2 @@
 @echo off
-deps -M:test
+clojure -M:test
