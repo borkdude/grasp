@@ -5,7 +5,11 @@
             [clojure.test :refer [deftest is]]
             [grasp.api :as g :refer [grasp grasp-string unwrap]]))
 
-(def clojure-core (slurp (io/resource "clojure/core.clj")))
+(def clojure-core
+  (slurp (or (io/resource "clojure/core.clj")
+             ;; babashka: no clojure jar on the classpath, the test:bb task
+             ;; downloads this file
+             (io/file "test-resources" "clojure" "core.clj"))))
 
 (s/def ::clause (s/cat :sym symbol? :lists (s/+ list?)))
 
@@ -52,9 +56,11 @@
                 (map meta))))))
 
 (deftest classpath-test
-  (->> (grasp (System/getProperty "java.class.path") #{'frequencies})
-       (first)
-       (is)))
+  ;; no java.class.path in babashka
+  (when-let [cp (System/getProperty "java.class.path")]
+    (->> (grasp cp #{'frequencies})
+         (first)
+         (is))))
 
 (deftest keyword-test
   (is  (= '({:line 6, :column 13}

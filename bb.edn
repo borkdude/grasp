@@ -1,2 +1,14 @@
-{:tasks
- {test:clj (clojure "-M:test")}}
+{:paths ["src" "test" "test-resources"]
+ :tasks
+ {test:clj (clojure "-M:test")
+  test:bb {:doc "Run tests with babashka"
+           :requires ([babashka.fs :as fs]
+                      [clojure.test :as t])
+           :task (do (when-not (fs/exists? "test-resources/clojure/core.clj")
+                       (fs/create-dirs "test-resources/clojure")
+                       (spit "test-resources/clojure/core.clj"
+                             (slurp "https://raw.githubusercontent.com/clojure/clojure/clojure-1.12.1/src/clj/clojure/core.clj")))
+                     (require 'grasp.api-test)
+                     (let [{:keys [fail error]} (t/run-tests 'grasp.api-test)]
+                       (when (pos? (+ fail error))
+                         (System/exit 1))))}}}
