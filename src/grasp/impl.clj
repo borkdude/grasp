@@ -6,7 +6,7 @@
             [clojure.walk :refer [postwalk]]
             [edamame.core :as e]
             [sci.core :as sci]
-            [sci.impl.parser :as p]))
+))
 
 (set! *warn-on-reflection* true)
 
@@ -145,6 +145,16 @@
 (defn unwrap-all [node]
   (postwalk unwrap node))
 
+;; sci's binding macros expand to sci.impl.vars, which babashka does not
+;; expose. Resolving push/pop-thread-bindings in the ctx returns sci's own
+;; implementations, which work on sci vars on the JVM and in babashka.
+(defn- with-ns-binding [ctx f]
+  (let [push @(sci/resolve ctx 'clojure.core/push-thread-bindings)
+        pop* @(sci/resolve ctx 'clojure.core/pop-thread-bindings)]
+    (push {sci/ns @sci/ns})
+    (try (f)
+         (finally (pop*)))))
+
 (defn grasp-string
   [s spec opts]
   (let [source? (:source opts)
@@ -154,7 +164,8 @@
                  (e/reader s))]
     (binding [*ctx* ctx] ;; grasp-string returns a strict seqable (vector) of
       ;; matches to ensure *ctx* is still bound
-      (sci/with-bindings {sci/ns @sci/ns}
+      (with-ns-binding ctx
+       (fn []
         (loop [matches []]
           (let [uri (:uri opts)
                 nexpr (try (sci/parse-next ctx reader
@@ -204,7 +215,7 @@
                               :else nexpr))
                       nexpr)
                     matched (match-sexprs form spec (:keep-fn opts) uri)]
-                (recur (into matches matched))))))))))
+                (recur (into matches matched)))))))))))
 
 (defn sources-from-jar
   [^java.io.File jar-file]
@@ -249,7 +260,7 @@
                 (grasp-string (slurp file) spec (assoc opts :uri (.toURI file)))))))
 
 (defn resolve-symbol [sym]
-  (p/fully-qualify *ctx* sym))
+  (sci/eval-string* *ctx* (str "`" sym)))
 
 ;;;; QUERY
 
