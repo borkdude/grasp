@@ -7,3 +7,4 @@ classes
 .cache/
 grasp.build_artifacts.txt
 .nrepl-port
+test-resources/
